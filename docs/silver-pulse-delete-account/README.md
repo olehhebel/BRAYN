@@ -48,3 +48,9 @@ This prototype is ready for GitHub Pages hosting:
 👉 **https://olehhebel.github.io/BRAYN/silver-pulse-delete-account/**
 
 No build step is required.
+
+---
+
+## 🚀 Launch
+
+👉 **[Open Prototype](https://olehhebel.github.io/BRAYN/silver-pulse-delete-account/)**
