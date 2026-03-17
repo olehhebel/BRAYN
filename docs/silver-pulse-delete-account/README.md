@@ -12,9 +12,7 @@ Self-contained inline HTML prototype for the 3-state Silver Pulse iOS flow:
 
 ## Local launch
 
-Open this file directly in a browser:
-
-`/home/runner/work/BRAYN/BRAYN/docs/silver-pulse-delete-account/index.html`
+Open `docs/silver-pulse-delete-account/index.html` directly in a browser.
 
 ## Share / GitHub Pages
 
