@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Silver Pulse – Delete Account Flow</title>
+  <style>
+    /* ─── Reset & Base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* iOS system colors */
+      --c-bg:           #F2F2F7;
+      --c-surface:      #FFFFFF;
+      --c-surface2:     #F2F2F7;
+      --c-border:       rgba(60,60,67,.12);
+      --c-label:        #000000;
+      --c-label2:       rgba(60,60,67,.6);
+      --c-label3:       rgba(60,60,67,.3);
+      --c-red:          #FF3B30;
+      --c-blue:         #007AFF;
+      --c-tint:         #007AFF;
+      --c-separator:    rgba(60,60,67,.18);
+      --c-card-shadow:  0 2px 12px rgba(0,0,0,.08);
+
+      /* Typography – SF Pro scale */
+      --f-base:         -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      --f-display:      -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+
+      /* Safe area */
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+
+      /* Overlay spring timings */
+      --dur-in:  .28s;
+      --dur-out: .22s;
+      --ease-spring: cubic-bezier(.32,1.25,.42,1);
+      --ease-out:    cubic-bezier(.22,1,.36,1);
+
+      /* Layout measurements */
+      --device-max-height: 852px;   /* iPhone 14 Pro logical height */
+      --status-bar-height: 44px;    /* standard iOS status bar */
+      --nav-bar-height:    44px;    /* standard iOS navigation bar */
+      --dropdown-offset:   4px;     /* gap between nav-bar and dropdown */
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: var(--f-base);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ─── Device Frame ──────────────────────────────────────────────── */
+    .device {
+      position: relative;
+      width: 100%;
+      max-width: 393px;          /* iPhone 14 Pro width */
+      height: 100dvh;
+      max-height: var(--device-max-height);
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--c-bg);
+    }
+
+    /* ─── Status Bar ─────────────────────────────────────────────────  */
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(54px + var(--sat));
+      padding-top: var(--sat);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-left: 20px;
+      padding-right: 16px;
+      padding-bottom: 6px;
+      background: transparent;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .status-bar .time {
+      font-family: var(--f-display);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.3px;
+      color: var(--c-label);
+    }
+
+    .status-bar .indicators {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-bar .indicators svg {
+      display: block;
+    }
+
+    /* ─── Navigation Bar ─────────────────────────────────────────────  */
+    .nav-bar {
+      position: absolute;
+      top: calc(44px + var(--sat));
+      left: 0;
+      right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 0 20px;
+      background: transparent;
+      z-index: 10;
+    }
+
+    .nav-bar .nav-title {
+      font-family: var(--f-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--c-label);
+      letter-spacing: -.3px;
+    }
+
+    .nav-bar .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-bar .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Settings icon button */
+    .btn-settings {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(118,118,128,.12);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s ease, transform .1s ease;
+      z-index: 101;
+    }
+
+    .btn-settings:active {
+      background: rgba(118,118,128,.24);
+      transform: scale(.92);
+    }
+
+    .btn-settings svg {
+      color: var(--c-label);
+      transition: color .15s;
+    }
+
+    .btn-settings.active {
+      background: rgba(118,118,128,.2);
+    }
+
+    /* ─── Screen Content ─────────────────────────────────────────────  */
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-top: calc(88px + var(--sat));
+      padding-bottom: calc(34px + var(--sab));
+      padding-left: max(16px, var(--sal));
+      padding-right: max(16px, var(--sar));
+    }
+
+    /* Prevent scroll when overlay open */
+    .screen.no-scroll {
+      overflow: hidden;
+    }
+
+    /* ─── Profile Card ───────────────────────────────────────────────  */
+    .profile-card {
+      background: var(--c-surface);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--c-card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #E8F4FD 0%, #B8D9F5 50%, #8EC5EE 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .avatar-initials {
+      font-family: var(--f-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: #3A7EBA;
+      letter-spacing: -.5px;
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-name {
+      font-family: var(--f-display);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--c-label);
+      letter-spacing: -.4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-email {
+      font-size: 13px;
+      color: var(--c-label2);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0,122,255,.1);
+      border-radius: 8px;
+      padding: 3px 8px;
+      margin-top: 6px;
+    }
+
+    .profile-badge-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-blue);
+      letter-spacing: .1px;
+    }
+
+    /* ─── Stats Row ──────────────────────────────────────────────────  */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--c-surface);
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: var(--c-card-shadow);
+    }
+
+    .stat-icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-family: var(--f-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--c-label);
+      letter-spacing: -.5px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--c-label2);
+      margin-top: 3px;
+      letter-spacing: .1px;
+    }
+
+    /* ─── Pulse Chart Card ───────────────────────────────────────────  */
+    .pulse-card {
+      background: var(--c-surface);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--c-card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-family: var(--f-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--c-label);
+      letter-spacing: -.3px;
+    }
+
+    .card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,59,48,.1);
+      border-radius: 8px;
+      padding: 4px 8px;
+    }
+
+    .card-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--c-red);
+    }
+
+    .card-badge-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--c-red);
+    }
+
+    .pulse-display {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .pulse-bpm {
+      font-family: var(--f-display);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--c-label);
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .pulse-unit {
+      font-size: 15px;
+      color: var(--c-label2);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    /* Simple SVG pulse waveform */
+    .pulse-wave-container {
+      position: relative;
+      height: 60px;
+      overflow: hidden;
+    }
+
+    .pulse-wave-svg {
+      width: 100%;
+      height: 60px;
+    }
+
+    /* ─── Activity List ──────────────────────────────────────────────  */
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-label2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .list-group {
+      background: var(--c-surface);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--c-card-shadow);
+      margin-bottom: 20px;
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      cursor: default;
+      position: relative;
+    }
+
+    .list-row::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 54px;
+      right: 0;
+      height: .5px;
+      background: var(--c-separator);
+    }
+
+    .list-row:last-child::after { display: none; }
+
+    .list-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .list-icon.red    { background: rgba(255,59,48,.12); }
+    .list-icon.blue   { background: rgba(0,122,255,.12); }
+    .list-icon.green  { background: rgba(52,199,89,.12); }
+    .list-icon.orange { background: rgba(255,149,0,.12); }
+    .list-icon.purple { background: rgba(175,82,222,.12); }
+
+    .list-content { flex: 1; min-width: 0; }
+
+    .list-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--c-label);
+      letter-spacing: -.2px;
+    }
+
+    .list-sub {
+      font-size: 12px;
+      color: var(--c-label2);
+      margin-top: 1px;
+    }
+
+    .list-chevron {
+      color: var(--c-label3);
+      flex-shrink: 0;
+    }
+
+    /* ─── Dropdown Overlay ──────────────────────────────────────────── */
+    .overlay-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--dur-out) ease;
+    }
+
+    .overlay-backdrop.visible {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    /* subtle dim behind dropdown */
+    .overlay-backdrop.menu-open {
+      background: rgba(0,0,0,.06);
+      transition: opacity var(--dur-in) ease;
+    }
+
+    /* ─── Dropdown Menu ──────────────────────────────────────────────  */
+    .dropdown-menu {
+      position: absolute;
+      top: calc(var(--status-bar-height) + var(--sat) + var(--nav-bar-height) + var(--dropdown-offset));
+      right: 20px;
+      width: 250px;
+      background: rgba(242,242,247,.92);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 .5px rgba(0,0,0,.12),
+        0 4px 24px rgba(0,0,0,.14),
+        0 8px 40px rgba(0,0,0,.08);
+      z-index: 210;
+      transform-origin: top right;
+      transform: scale(.8) translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dur-out) var(--ease-out),
+        opacity var(--dur-out) ease;
+    }
+
+    .dropdown-menu.open {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+      transition:
+        transform var(--dur-in) var(--ease-spring),
+        opacity var(--dur-in) ease;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      cursor: pointer;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .12s ease;
+      user-select: none;
+    }
+
+    .menu-item:active {
+      background: rgba(60,60,67,.1);
+    }
+
+    .menu-item + .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 16px;
+      right: 0;
+      height: .5px;
+      background: var(--c-separator);
+    }
+
+    .menu-item-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .menu-item-icon.blue   { background: var(--c-blue);  }
+    .menu-item-icon.gray   { background: #8E8E93; }
+    .menu-item-icon.orange { background: #FF9500; }
+    .menu-item-icon.red    { background: var(--c-red); }
+
+    .menu-item-icon svg, .menu-item-icon span { color: #fff; }
+
+    .menu-item-label {
+      flex: 1;
+      font-size: 15px;
+      color: var(--c-label);
+      letter-spacing: -.2px;
+    }
+
+    .menu-item.destructive .menu-item-label {
+      color: var(--c-red);
+    }
+
+    .menu-separator {
+      height: .5px;
+      background: var(--c-separator);
+      margin: 0;
+    }
+
+    /* ─── Popup Backdrop ─────────────────────────────────────────────  */
+    .popup-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-out) ease;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+
+    .popup-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+      transition: opacity var(--dur-in) ease;
+    }
+
+    /* ─── Confirmation Popup ─────────────────────────────────────────  */
+    .popup {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(.9);
+      width: calc(100% - 64px);
+      max-width: 270px;
+      background: rgba(242,242,247,.96);
+      backdrop-filter: blur(40px) saturate(1.8);
+      -webkit-backdrop-filter: blur(40px) saturate(1.8);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 .5px rgba(0,0,0,.12),
+        0 24px 48px rgba(0,0,0,.28);
+      z-index: 310;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dur-out) var(--ease-out),
+        opacity var(--dur-out) ease;
+    }
+
+    .popup.open {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+      transition:
+        transform var(--dur-in) var(--ease-spring),
+        opacity var(--dur-in) ease;
+    }
+
+    .popup-body {
+      padding: 20px 16px 16px;
+      text-align: center;
+    }
+
+    .popup-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255,59,48,.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+
+    .popup-icon svg {
+      color: var(--c-red);
+    }
+
+    .popup-title {
+      font-family: var(--f-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--c-label);
+      letter-spacing: -.3px;
+      margin-bottom: 6px;
+    }
+
+    .popup-message {
+      font-size: 13px;
+      color: var(--c-label2);
+      line-height: 1.45;
+      letter-spacing: -.1px;
+    }
+
+    .popup-actions {
+      display: flex;
+      flex-direction: column;
+      border-top: .5px solid var(--c-separator);
+    }
+
+    .popup-btn {
+      padding: 14px 16px;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -.3px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .12s ease;
+      user-select: none;
+      position: relative;
+    }
+
+    .popup-btn:active {
+      background: rgba(60,60,67,.1);
+    }
+
+    .popup-btn + .popup-btn {
+      border-top: .5px solid var(--c-separator);
+    }
+
+    .popup-btn.destructive {
+      color: var(--c-red);
+      font-weight: 600;
+    }
+
+    .popup-btn.cancel {
+      color: var(--c-blue);
+    }
+
+    /* ─── Bottom Tab Bar ─────────────────────────────────────────────  */
+    .tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(49px + var(--sab));
+      background: rgba(249,249,249,.92);
+      backdrop-filter: blur(20px) saturate(1.8);
+      -webkit-backdrop-filter: blur(20px) saturate(1.8);
+      border-top: .5px solid var(--c-border);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 6px;
+      padding-bottom: var(--sab);
+      z-index: 5;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      padding: 4px 8px;
+    }
+
+    .tab-item svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .tab-label {
+      font-size: 10px;
+      letter-spacing: .1px;
+      font-weight: 500;
+    }
+
+    .tab-item.active svg { color: var(--c-blue); }
+    .tab-item.active .tab-label { color: var(--c-blue); }
+    .tab-item:not(.active) svg { color: rgba(60,60,67,.36); }
+    .tab-item:not(.active) .tab-label { color: rgba(60,60,67,.36); }
+
+    /* ─── Misc Utilities ─────────────────────────────────────────────  */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      clip: rect(0,0,0,0);
+      overflow: hidden;
+    }
+
+    /* ─── Pulse animation ────────────────────────────────────────────  */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.8); }
+    }
+    .card-badge-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+    /* wave path animation */
+    @keyframes wave-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .pulse-wave-path { animation: wave-scroll 3.2s linear infinite; }
+
+  </style>
+</head>
+<body>
+
+<div class="device" id="device">
+
+  <!-- ── Status Bar ─────────────────────────────────────────────── -->
+  <div class="status-bar" aria-hidden="true">
+    <span class="time" id="status-time">9:41</span>
+    <span class="indicators">
+      <!-- Signal bars -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <rect x="0"  y="8" width="3" height="4" rx="1" fill="black"/>
+        <rect x="4.5" y="5.5" width="3" height="6.5" rx="1" fill="black"/>
+        <rect x="9" y="3" width="3" height="9" rx="1" fill="black"/>
+        <rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="black"/>
+      </svg>
+      <!-- WiFi -->
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <path d="M8 9.5C8.83 9.5 9.5 10.17 9.5 11S8.83 12.5 8 12.5 6.5 11.83 6.5 11 7.17 9.5 8 9.5Z" fill="black"/>
+        <path d="M8 6.4C9.7 6.4 11.22 7.07 12.35 8.14l1.07-1.07A7.38 7.38 0 008 4.9a7.38 7.38 0 00-5.42 2.17l1.07 1.07A5.3 5.3 0 018 6.4Z" fill="black"/>
+        <path d="M8 3.2c2.8 0 5.32 1.14 7.16 2.98L16.3 5.04A9.95 9.95 0 008 1.7a9.95 9.95 0 00-8.3 3.34l1.14 1.14A8.35 8.35 0 018 3.2Z" fill="black" opacity=".35"/>
+      </svg>
+      <!-- Battery -->
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="black" stroke-opacity=".35"/>
+        <rect x="2" y="2" width="17" height="8" rx="2" fill="black"/>
+        <path d="M23 4v4a2 2 0 000-4Z" fill="black" opacity=".4"/>
+      </svg>
+    </span>
+  </div>
+
+  <!-- ── Navigation Bar ────────────────────────────────────────── -->
+  <nav class="nav-bar" aria-label="App navigation">
+    <div class="nav-left">
+      <span class="nav-title">Silver Pulse</span>
+    </div>
+    <div class="nav-right">
+      <!-- Settings button – anchor for dropdown -->
+      <button
+        class="btn-settings"
+        id="btn-settings"
+        aria-label="Settings"
+        aria-haspopup="menu"
+        aria-expanded="false"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Screen 1 Content ──────────────────────────────────────── -->
+  <main class="screen" id="main-screen">
+
+    <!-- Profile Card -->
+    <section class="profile-card" aria-label="Profile">
+      <div class="avatar">
+        <span class="avatar-initials">AK</span>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">Alex Kim</div>
+        <div class="profile-email">alex.kim@silverhealth.io</div>
+        <div class="profile-badge">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M5 0L6.12 3.45H9.76L6.82 5.59L7.94 9.05L5 6.91L2.06 9.05L3.18 5.59L.24 3.45H3.88L5 0Z" fill="#007AFF"/>
+          </svg>
+          <span class="profile-badge-text">Pro Member</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Row -->
+    <div class="stats-row" aria-label="Health stats">
+      <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-value">72</div>
+        <div class="stat-label">BPM</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🩸</div>
+        <div class="stat-value">98<span style="font-size:12px;font-weight:500">%</span></div>
+        <div class="stat-label">SpO₂</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏃</div>
+        <div class="stat-value">8.4<span style="font-size:12px;font-weight:500">k</span></div>
+        <div class="stat-label">Steps</div>
+      </div>
+    </div>
+
+    <!-- Pulse Chart Card -->
+    <section class="pulse-card" aria-label="Heart rate chart">
+      <div class="card-header">
+        <span class="card-title">Heart Rate</span>
+        <span class="card-badge" aria-label="Live">
+          <span class="card-badge-dot"></span>
+          <span class="card-badge-text">Live</span>
+        </span>
+      </div>
+      <div class="pulse-display">
+        <span class="pulse-bpm">72</span>
+        <span class="pulse-unit">bpm</span>
+      </div>
+      <!-- Animated ECG-style waveform -->
+      <div class="pulse-wave-container" aria-hidden="true">
+        <svg class="pulse-wave-svg" viewBox="0 0 800 60" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%"   stop-color="#FF3B30" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#FF3B30" stop-opacity=".15"/>
+            </linearGradient>
+          </defs>
+          <!-- Doubled waveform for seamless loop (800px wide, repeated twice = 1600px) -->
+          <g class="pulse-wave-path">
+            <!-- ECG-style path: flat baseline with sharp QRS complexes -->
+            <path
+              d="M0,30 L60,30 L70,30 L80,20 L90,40 L100,10 L110,50 L120,30 L130,30
+                 L190,30 L200,30 L210,20 L220,40 L230,10 L240,50 L250,30 L260,30
+                 L320,30 L330,30 L340,20 L350,40 L360,10 L370,50 L380,30 L390,30
+                 L400,30 L460,30 L470,30 L480,20 L490,40 L500,10 L510,50 L520,30 L530,30
+                 L590,30 L600,30 L610,20 L620,40 L630,10 L640,50 L650,30 L660,30
+                 L720,30 L730,30 L740,20 L750,40 L760,10 L770,50 L780,30 L790,30 L800,30"
+              fill="none" stroke="#FF3B30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <div class="section-label">Recent Activity</div>
+    <div class="list-group" role="list" aria-label="Recent activity">
+      <div class="list-row" role="listitem">
+        <div class="list-icon red">❤️</div>
+        <div class="list-content">
+          <div class="list-title">Heart Rate Check</div>
+          <div class="list-sub">Today, 9:28 AM</div>
+        </div>
+        <svg class="list-chevron" width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+      </div>
+      <div class="list-row" role="listitem">
+        <div class="list-icon blue">🏊</div>
+        <div class="list-content">
+          <div class="list-title">Swimming</div>
+          <div class="list-sub">Yesterday · 42 min</div>
+        </div>
+        <svg class="list-chevron" width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+      </div>
+      <div class="list-row" role="listitem">
+        <div class="list-icon green">🧘</div>
+        <div class="list-content">
+          <div class="list-title">Meditation</div>
+          <div class="list-sub">Yesterday · 20 min</div>
+        </div>
+        <svg class="list-chevron" width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+      </div>
+    </div>
+
+    <!-- Health Goals -->
+    <div class="section-label">Goals</div>
+    <div class="list-group" role="list" aria-label="Health goals">
+      <div class="list-row" role="listitem">
+        <div class="list-icon orange">🔥</div>
+        <div class="list-content">
+          <div class="list-title">Active Calories</div>
+          <div class="list-sub">320 / 500 kcal</div>
+        </div>
+        <svg class="list-chevron" width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+      </div>
+      <div class="list-row" role="listitem">
+        <div class="list-icon purple">💤</div>
+        <div class="list-content">
+          <div class="list-title">Sleep</div>
+          <div class="list-sub">7h 12m · Good</div>
+        </div>
+        <svg class="list-chevron" width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Bottom Tab Bar ────────────────────────────────────────── -->
+  <nav class="tab-bar" aria-label="Tab bar">
+    <!-- Home -->
+    <div class="tab-item active" role="button" aria-label="Home" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="tab-label">Home</span>
+    </div>
+    <!-- Activity -->
+    <div class="tab-item" role="button" aria-label="Activity" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      <span class="tab-label">Activity</span>
+    </div>
+    <!-- Metrics -->
+    <div class="tab-item" role="button" aria-label="Metrics" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      <span class="tab-label">Metrics</span>
+    </div>
+    <!-- Profile -->
+    <div class="tab-item" role="button" aria-label="Profile" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="tab-label">Profile</span>
+    </div>
+  </nav>
+
+  <!-- ── Screen 2: Dropdown Menu ──────────────────────────────── -->
+  <!--
+    The menu is anchored to the top-right (settings icon position).
+    It uses iOS-style frosted glass, smooth spring animation on open/close.
+  -->
+  <div
+    class="overlay-backdrop"
+    id="menu-backdrop"
+    role="presentation"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="dropdown-menu"
+    id="dropdown-menu"
+    role="menu"
+    aria-label="Settings menu"
+    aria-hidden="true"
+  >
+    <!-- Account Settings -->
+    <div class="menu-item" role="menuitem" tabindex="-1" data-menu-dismiss="true">
+      <div class="menu-item-icon blue">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <span class="menu-item-label">Account Settings</span>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(60,60,67,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Notifications -->
+    <div class="menu-item" role="menuitem" tabindex="-1" data-menu-dismiss="true">
+      <div class="menu-item-icon orange">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+      </div>
+      <span class="menu-item-label">Notifications</span>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(60,60,67,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Privacy -->
+    <div class="menu-item" role="menuitem" tabindex="-1" data-menu-dismiss="true">
+      <div class="menu-item-icon gray">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <span class="menu-item-label">Privacy</span>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(60,60,67,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Help & Support -->
+    <div class="menu-item" role="menuitem" tabindex="-1" data-menu-dismiss="true">
+      <div class="menu-item-icon blue" style="background:#34C759">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <span class="menu-item-label">Help &amp; Support</span>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(60,60,67,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Separator before destructive -->
+    <div class="menu-separator"></div>
+
+    <!-- Delete Account (destructive) -->
+    <div class="menu-item destructive" role="menuitem" tabindex="-1" id="menu-delete">
+      <div class="menu-item-icon red">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+      </div>
+      <span class="menu-item-label">Delete account</span>
+    </div>
+  </div>
+
+  <!-- ── Screen 3: Delete Confirmation Popup ──────────────────── -->
+  <div
+    class="popup-backdrop"
+    id="popup-backdrop"
+    role="presentation"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="popup"
+    id="popup"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="popup-title"
+    aria-describedby="popup-msg"
+    aria-hidden="true"
+  >
+    <div class="popup-body">
+      <div class="popup-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+      </div>
+      <div class="popup-title" id="popup-title">Delete Account</div>
+      <div class="popup-message" id="popup-msg">
+        Are you sure you want to permanently delete your account? All your health data and progress will be lost. This action cannot be undone.
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn destructive" id="btn-confirm-delete" aria-label="Confirm delete account">
+        Delete Account
+      </button>
+      <button class="popup-btn cancel" id="btn-cancel" aria-label="Cancel">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+</div><!-- /device -->
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Elements ──────────────────────────────────────────────────── */
+  const device          = document.getElementById('device');
+  const btnSettings     = document.getElementById('btn-settings');
+  const menuBackdrop    = document.getElementById('menu-backdrop');
+  const dropdownMenu    = document.getElementById('dropdown-menu');
+  const menuDelete      = document.getElementById('menu-delete');
+  const popupBackdrop   = document.getElementById('popup-backdrop');
+  const popup           = document.getElementById('popup');
+  const btnConfirmDel   = document.getElementById('btn-confirm-delete');
+  const btnCancel       = document.getElementById('btn-cancel');
+  const mainScreen      = document.getElementById('main-screen');
+
+  /* ── State ─────────────────────────────────────────────────────── */
+  let menuOpen  = false;
+  let popupOpen = false;
+
+  /* ── Helpers ───────────────────────────────────────────────────── */
+
+  /** Prevent scroll while overlay is open */
+  function lockScroll()   { mainScreen.classList.add('no-scroll'); }
+  function unlockScroll() { mainScreen.classList.remove('no-scroll'); }
+
+  /** Announce to screen readers */
+  function setAriaHidden(el, hidden) {
+    el.setAttribute('aria-hidden', String(hidden));
+  }
+
+  /* ── Open / Close Menu ─────────────────────────────────────────── */
+
+  function openMenu() {
+    if (menuOpen) return;
+    menuOpen = true;
+
+    btnSettings.classList.add('active');
+    btnSettings.setAttribute('aria-expanded', 'true');
+
+    menuBackdrop.classList.add('visible', 'menu-open');
+    setAriaHidden(menuBackdrop, false);
+
+    dropdownMenu.classList.add('open');
+    setAriaHidden(dropdownMenu, false);
+
+    lockScroll();
+  }
+
+  function closeMenu(skipFocusReturn) {
+    if (!menuOpen) return;
+    menuOpen = false;
+
+    btnSettings.classList.remove('active');
+    btnSettings.setAttribute('aria-expanded', 'false');
+
+    menuBackdrop.classList.remove('visible', 'menu-open');
+    setAriaHidden(menuBackdrop, true);
+
+    dropdownMenu.classList.remove('open');
+    setAriaHidden(dropdownMenu, true);
+
+    if (!popupOpen) unlockScroll();
+    if (!skipFocusReturn) btnSettings.focus();
+  }
+
+  /* ── Open / Close Popup ────────────────────────────────────────── */
+
+  function openPopup() {
+    if (popupOpen) return;
+    popupOpen = true;
+
+    // Keep scroll locked (menu may already lock it)
+    lockScroll();
+
+    popupBackdrop.classList.add('open');
+    setAriaHidden(popupBackdrop, false);
+
+    popup.classList.add('open');
+    setAriaHidden(popup, false);
+
+    // Trap focus into popup
+    requestAnimationFrame(() => btnConfirmDel.focus());
+  }
+
+  function closePopup(skipFocusReturn) {
+    if (!popupOpen) return;
+    popupOpen = false;
+
+    popupBackdrop.classList.remove('open');
+    setAriaHidden(popupBackdrop, true);
+
+    popup.classList.remove('open');
+    setAriaHidden(popup, true);
+
+    if (!menuOpen) unlockScroll();
+    if (!skipFocusReturn) btnSettings.focus();
+  }
+
+  function closeAll() {
+    closeMenu(true);
+    closePopup(true);
+    btnSettings.focus();
+  }
+
+  /* ── Event Listeners ───────────────────────────────────────────── */
+
+  // Settings button toggle
+  btnSettings.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (menuOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  // Backdrop tap → close menu
+  menuBackdrop.addEventListener('click', function () {
+    if (popupOpen) {
+      closePopup();
+    } else {
+      closeMenu();
+    }
+  });
+
+  // "Delete account" menu item
+  menuDelete.addEventListener('click', function () {
+    closeMenu(true);   // close menu first (skip focus return)
+    // Slight delay so menu close animation starts before popup opens
+    setTimeout(openPopup, 60);
+  });
+
+  // Popup backdrop tap → close popup
+  popupBackdrop.addEventListener('click', function () {
+    closePopup();
+  });
+
+  // Cancel button
+  btnCancel.addEventListener('click', function () {
+    closePopup();
+  });
+
+  // Confirm delete button (in real app would trigger deletion)
+  btnConfirmDel.addEventListener('click', function () {
+    closeAll();
+    // Subtle visual feedback – could navigate to a confirmation screen
+    // For this prototype: just close the overlay
+  });
+
+  // Prevent clicks inside popup from bubbling to backdrop
+  popup.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+
+  // Prevent clicks inside menu from closing via backdrop
+  dropdownMenu.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+
+  // Keyboard: Escape closes overlays on desktop
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (popupOpen) {
+        closePopup();
+      } else if (menuOpen) {
+        closeMenu();
+      }
+    }
+  });
+
+  // Focus trap inside popup (Tab cycling)
+  popup.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    const focusables = popup.querySelectorAll('button');
+    const first = focusables[0];
+    const last  = focusables[focusables.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  // Click on non-destructive menu items (no-op but close menu for realism)
+  dropdownMenu.querySelectorAll('[data-menu-dismiss]').forEach(function (el) {
+    el.addEventListener('click', function () { closeMenu(); });
+  });
+
+  /* ── Live Clock ────────────────────────────────────────────────── */
+  var timeEl = document.getElementById('status-time');
+  function updateClock() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    h = h % 12 || 12;
+    timeEl.textContent = h + ':' + (m < 10 ? '0' + m : m);
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  /* ── Animated BPM (subtle randomised update) ───────────────────── */
+  var bpmEls = document.querySelectorAll('.pulse-bpm');
+  var baseHR = 72;
+  setInterval(function () {
+    var v = baseHR + Math.round((Math.random() - 0.5) * 4);
+    bpmEls.forEach(function (el) { el.textContent = v; });
+  }, 2800);
+
+})();
+</script>
+</body>
+</html>
