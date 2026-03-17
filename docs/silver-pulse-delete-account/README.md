@@ -12,11 +12,11 @@ A responsive, iOS-style interactive prototype that demonstrates the account-dele
 
 ## Figma Source
 
-Design nodes from the **Silver_Pulse** Figma file (`LsZx2axPeUwOu8SCTHylKp`):
+Design nodes from the **Silver_Pulse** Figma file (requires access to the private file):
 
-- Screen 1 → `node-id=974-3062`
-- Screen 2 → `node-id=974-3213`
-- Screen 3 → `node-id=974-3010`
+- [Screen 1](https://www.figma.com/design/LsZx2axPeUwOu8SCTHylKp/Silver_Pulse?node-id=974-3062) → `node-id=974-3062`
+- [Screen 2](https://www.figma.com/design/LsZx2axPeUwOu8SCTHylKp/Silver_Pulse?node-id=974-3213) → `node-id=974-3213`
+- [Screen 3](https://www.figma.com/design/LsZx2axPeUwOu8SCTHylKp/Silver_Pulse?node-id=974-3010) → `node-id=974-3010`
 
 ## Interaction Flow
 

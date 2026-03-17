@@ -674,8 +674,8 @@ body.locked { overflow: hidden; }
     const r = document.createElement("span");
     r.className = "tap-ripple";
     const rect = el.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left;
-    const y = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top;
+    const x = (e.clientX ?? e.touches?.[0]?.clientX ?? rect.left + rect.width / 2) - rect.left;
+    const y = (e.clientY ?? e.touches?.[0]?.clientY ?? rect.top + rect.height / 2) - rect.top;
     r.style.left = x + "px";
     r.style.top  = y + "px";
     el.style.position = el.style.position || "relative";
