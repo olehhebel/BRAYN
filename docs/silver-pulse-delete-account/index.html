@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Silver Pulse — Delete Account Flow</title>
+<style>
+/* ───────────────────────── Reset & Base ───────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #f2f2f7;
+  color: #1c1c1e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ───────────────────────── CSS Variables ───────────────────────── */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Silver Pulse palette */
+  --bg-primary: #f2f2f7;
+  --bg-secondary: #ffffff;
+  --bg-grouped: #f2f2f7;
+  --separator: rgba(60, 60, 67, 0.12);
+  --label-primary: #1c1c1e;
+  --label-secondary: #8e8e93;
+  --label-tertiary: #aeaeb2;
+  --accent: #007aff;
+  --destructive: #ff3b30;
+  --overlay-dim: rgba(0, 0, 0, 0.32);
+
+  /* Layout */
+  --radius-card: 14px;
+  --radius-menu: 14px;
+  --radius-popup: 16px;
+  --shadow-menu: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-popup: 0 16px 48px rgba(0,0,0,0.24), 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* ───────────────────────── App Shell ───────────────────────── */
+.app-shell {
+  width: 100%;
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* ───────────────────────── Screen 1 — Profile / Settings ───────────────────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: calc(var(--safe-top) + 0px);
+  padding-bottom: calc(var(--safe-bottom) + 24px);
+}
+
+/* Navigation bar */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  padding-top: calc(var(--safe-top) + 12px);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-primary);
+}
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.nav-btn:active {
+  background: rgba(0,0,0,0.06);
+}
+
+.nav-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--label-primary);
+}
+
+/* Profile header */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 8px;
+}
+
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c0c0c8 0%, #a8a8b0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.avatar-initials {
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 2px;
+}
+
+.profile-email {
+  font-size: 14px;
+  color: var(--label-secondary);
+  margin-bottom: 4px;
+}
+
+/* Sections */
+.section {
+  padding: 0 16px;
+  margin-top: 24px;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--label-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0 4px 8px;
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  position: relative;
+}
+
+.card-row + .card-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.card-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+}
+
+.card-icon.blue   { background: #007aff; }
+.card-icon.green  { background: #34c759; }
+.card-icon.orange { background: #ff9500; }
+.card-icon.purple { background: #af52de; }
+.card-icon.gray   { background: #8e8e93; }
+
+.card-label {
+  flex: 1;
+  font-size: 16px;
+  letter-spacing: -0.1px;
+}
+
+.card-value {
+  font-size: 16px;
+  color: var(--label-secondary);
+  margin-right: 4px;
+}
+
+.card-chevron {
+  width: 14px;
+  height: 14px;
+  fill: var(--label-tertiary);
+  flex-shrink: 0;
+}
+
+/* Version footer */
+.version-footer {
+  text-align: center;
+  padding: 32px 16px 0;
+  font-size: 13px;
+  color: var(--label-tertiary);
+}
+
+/* ───────────────────────── Overlay Backdrop ───────────────────────── */
+.overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: var(--overlay-dim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-backdrop-filter: saturate(180%) blur(6px);
+  backdrop-filter: saturate(180%) blur(6px);
+}
+
+.overlay-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ───────────────────────── Screen 2 — Dropdown Menu ───────────────────────── */
+.dropdown-menu {
+  position: absolute;
+  top: calc(var(--safe-top) + 52px);
+  right: 12px;
+  z-index: 20;
+  width: 240px;
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(40px);
+  backdrop-filter: saturate(180%) blur(40px);
+  border-radius: var(--radius-menu);
+  box-shadow: var(--shadow-menu);
+  overflow: hidden;
+  transform-origin: top right;
+  transform: scale(0.4) translateY(-8px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dropdown-menu.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-size: 16px;
+  letter-spacing: -0.1px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.menu-item:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.menu-item + .menu-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.menu-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.menu-item-label {
+  flex: 1;
+}
+
+.menu-item.destructive {
+  color: var(--destructive);
+}
+
+.menu-item.destructive svg {
+  fill: var(--destructive);
+}
+
+.menu-item:not(.destructive) svg {
+  fill: var(--label-primary);
+}
+
+/* ───────────────────────── Screen 3 — Delete Account Popup ───────────────────────── */
+.popup-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.44);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.popup-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.popup {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-popup);
+  width: 100%;
+  max-width: 300px;
+  box-shadow: var(--shadow-popup);
+  overflow: hidden;
+  transform: scale(0.88);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.popup-backdrop.visible .popup {
+  transform: scale(1);
+}
+
+.popup-body {
+  padding: 24px 20px 20px;
+  text-align: center;
+}
+
+.popup-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.popup-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--destructive);
+}
+
+.popup-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  margin-bottom: 6px;
+}
+
+.popup-message {
+  font-size: 14px;
+  color: var(--label-secondary);
+  line-height: 1.42;
+}
+
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  border-top: 0.5px solid var(--separator);
+}
+
+.popup-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  font-size: 17px;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.popup-btn:active {
+  background: rgba(0,0,0,0.06);
+}
+
+.popup-btn + .popup-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.popup-btn.cancel {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.popup-btn.destructive {
+  color: var(--destructive);
+  font-weight: 400;
+}
+
+/* ───────────────────────── Tap Feedback Ripple ───────────────────────── */
+@keyframes tap-ripple {
+  0%   { transform: scale(0); opacity: 0.25; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.tap-ripple {
+  position: absolute;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  background: rgba(0,0,0,0.08);
+  pointer-events: none;
+  animation: tap-ripple 0.45s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ───────────────────────── Responsive ───────────────────────── */
+@media (min-width: 431px) {
+  .app-shell {
+    height: 100vh;
+    border-left: 0.5px solid var(--separator);
+    border-right: 0.5px solid var(--separator);
+  }
+}
+
+@media (max-width: 350px) {
+  .dropdown-menu { width: calc(100vw - 24px); right: 8px; }
+  .popup { max-width: 260px; }
+}
+
+/* Prevent body scroll when overlay active */
+body.locked { overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="app-shell" id="appShell">
+
+  <!-- ─── Screen 1: Profile / Settings ─── -->
+  <div class="screen" id="screen1">
+    <nav class="nav-bar">
+      <button class="nav-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      </button>
+      <span class="nav-title">Settings</span>
+      <button class="nav-btn" id="settingsBtn" aria-label="More options">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+      </button>
+    </nav>
+
+    <div class="profile-header">
+      <div class="avatar"><span class="avatar-initials">SP</span></div>
+      <div class="profile-name">Silver Pulse</div>
+      <div class="profile-email">user@silverpulse.app</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Account</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="card-icon blue">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>
+          </div>
+          <span class="card-label">Personal Info</span>
+          <svg class="card-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+        <div class="card-row">
+          <div class="card-icon green">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <span class="card-label">Security</span>
+          <svg class="card-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+        <div class="card-row">
+          <div class="card-icon orange">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+          </div>
+          <span class="card-label">Notifications</span>
+          <svg class="card-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Preferences</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="card-icon purple">
+            <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c.7 0 1.37-.08 2-.24V18.9c-.64.18-1.31.28-2 .28a7.18 7.18 0 0 1 0-14.36c.69 0 1.36.1 2 .28V3.24c-.63-.16-1.3-.24-2-.24zm8 9a8 8 0 0 0-4-6.92v1.88A6.18 6.18 0 0 1 18.18 12 6.18 6.18 0 0 1 16 16.04v1.88A8 8 0 0 0 20 12z"/></svg>
+          </div>
+          <span class="card-label">Appearance</span>
+          <span class="card-value">Auto</span>
+          <svg class="card-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+        <div class="card-row">
+          <div class="card-icon gray">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 0 1 5.08 16zm2.95-8H5.08a7.987 7.987 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
+          </div>
+          <span class="card-label">Language</span>
+          <span class="card-value">English</span>
+          <svg class="card-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <p class="version-footer">Silver Pulse v1.2.0</p>
+  </div>
+
+  <!-- ─── Overlay Backdrop (dim + blur) ─── -->
+  <div class="overlay-backdrop" id="overlayBackdrop"></div>
+
+  <!-- ─── Screen 2: Dropdown Menu ─── -->
+  <div class="dropdown-menu" id="dropdownMenu" role="menu" aria-label="Account options">
+    <div class="menu-item" role="menuitem" data-action="edit-profile">
+      <span class="menu-item-label">Edit Profile</span>
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </div>
+    <div class="menu-item" role="menuitem" data-action="share">
+      <span class="menu-item-label">Share Profile</span>
+      <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 18 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+    </div>
+    <div class="menu-item" role="menuitem" data-action="export">
+      <span class="menu-item-label">Export Data</span>
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+    </div>
+    <div class="menu-item destructive" role="menuitem" data-action="delete-account" id="deleteAccountBtn">
+      <span class="menu-item-label">Delete Account</span>
+      <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+    </div>
+  </div>
+
+  <!-- ─── Screen 3: Delete Account Popup ─── -->
+  <div class="popup-backdrop" id="popupBackdrop">
+    <div class="popup" id="popup" role="alertdialog" aria-label="Confirm account deletion">
+      <div class="popup-body">
+        <div class="popup-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="popup-title">Delete Account?</div>
+        <p class="popup-message">This action is permanent. All your data, preferences, and history will be removed and cannot be recovered.</p>
+      </div>
+      <div class="popup-actions">
+        <button class="popup-btn destructive" id="confirmDeleteBtn">Delete My Account</button>
+        <button class="popup-btn cancel" id="cancelDeleteBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── DOM refs ── */
+  const shell        = document.getElementById("appShell");
+  const screen1      = document.getElementById("screen1");
+  const settingsBtn  = document.getElementById("settingsBtn");
+  const backdrop     = document.getElementById("overlayBackdrop");
+  const menu         = document.getElementById("dropdownMenu");
+  const deleteBtn    = document.getElementById("deleteAccountBtn");
+  const popupDrop    = document.getElementById("popupBackdrop");
+  const popup        = document.getElementById("popup");
+  const cancelBtn    = document.getElementById("cancelDeleteBtn");
+  const confirmBtn   = document.getElementById("confirmDeleteBtn");
+
+  /* ── State ── */
+  let menuOpen  = false;
+  let popupOpen = false;
+
+  /* ── Helpers ── */
+  function lockScroll()   { screen1.style.overflow = "hidden"; }
+  function unlockScroll() { screen1.style.overflow = ""; }
+
+  /* ── Open menu (Screen 2) ── */
+  function openMenu() {
+    if (menuOpen) return;
+    menuOpen = true;
+    lockScroll();
+    backdrop.classList.add("visible");
+    menu.classList.add("open");
+    settingsBtn.setAttribute("aria-expanded", "true");
+  }
+
+  /* ── Close menu (back to Screen 1) ── */
+  function closeMenu(cb) {
+    if (!menuOpen) { cb && cb(); return; }
+    menuOpen = false;
+    menu.classList.remove("open");
+    backdrop.classList.remove("visible");
+    settingsBtn.setAttribute("aria-expanded", "false");
+    unlockScroll();
+    if (cb) setTimeout(cb, 280);
+  }
+
+  /* ── Open popup (Screen 3) ── */
+  function openPopup() {
+    if (popupOpen) return;
+    popupOpen = true;
+    /* Close menu instantly to avoid stacking */
+    menu.classList.remove("open");
+    menuOpen = false;
+    /* Show popup over backdrop (backdrop stays dim) */
+    popupDrop.classList.add("visible");
+    backdrop.classList.add("visible");
+  }
+
+  /* ── Close popup (back to Screen 1) ── */
+  function closePopup() {
+    if (!popupOpen) return;
+    popupOpen = false;
+    popupDrop.classList.remove("visible");
+    backdrop.classList.remove("visible");
+    unlockScroll();
+  }
+
+  /* ── Close everything ── */
+  function closeAll() {
+    if (popupOpen) { closePopup(); return; }
+    if (menuOpen)  { closeMenu();  return; }
+  }
+
+  /* ── Tap ripple effect ── */
+  function ripple(el, e) {
+    const r = document.createElement("span");
+    r.className = "tap-ripple";
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top;
+    r.style.left = x + "px";
+    r.style.top  = y + "px";
+    el.style.position = el.style.position || "relative";
+    el.appendChild(r);
+    setTimeout(function () { r.remove(); }, 500);
+  }
+
+  /* ── Event: settings button ── */
+  settingsBtn.addEventListener("click", function (e) {
+    ripple(this, e);
+    if (menuOpen) closeMenu();
+    else openMenu();
+  });
+
+  /* ── Event: backdrop tap (close menu) ── */
+  backdrop.addEventListener("click", function () {
+    closeAll();
+  });
+
+  /* ── Event: delete-account menu item ── */
+  deleteBtn.addEventListener("click", function (e) {
+    ripple(this, e);
+    setTimeout(openPopup, 120);
+  });
+
+  /* ── Event: popup backdrop tap ── */
+  popupDrop.addEventListener("click", function (e) {
+    if (e.target === popupDrop) closePopup();
+  });
+
+  /* ── Event: cancel button ── */
+  cancelBtn.addEventListener("click", function (e) {
+    ripple(this, e);
+    setTimeout(closePopup, 80);
+  });
+
+  /* ── Event: confirm delete (demo — just close) ── */
+  confirmBtn.addEventListener("click", function (e) {
+    ripple(this, e);
+    setTimeout(closePopup, 80);
+  });
+
+  /* ── Keyboard: Escape ── */
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeAll();
+  });
+
+  /* ── Prevent overscroll on menu items ── */
+  menu.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+})();
+</script>
+</body>
+</html>
