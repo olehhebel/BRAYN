@@ -45,8 +45,6 @@ This prototype is ready for GitHub Pages hosting:
 3. Set **Branch** to `main` (or your default branch) and folder to `/docs`.
 4. Save — the flow will be available at:
 
-```
-https://<owner>.github.io/<repo>/silver-pulse-delete-account/
-```
+👉 **https://olehhebel.github.io/BRAYN/silver-pulse-delete-account/**
 
 No build step is required.
