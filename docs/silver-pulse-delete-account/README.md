@@ -12,7 +12,7 @@ Self-contained inline HTML prototype for the Silver Pulse mood check screen and 
 
 ## Local launch
 
-Open `/home/runner/work/BRAYN/BRAYN/docs/silver-pulse-delete-account/index.html` directly in a browser, or serve `/home/runner/work/BRAYN/BRAYN/docs` with any static HTTP server.
+Open `docs/silver-pulse-delete-account/index.html` directly in a browser, or serve the `docs` directory with any static HTTP server.
 
 ## 🔗 Launch Link
 
