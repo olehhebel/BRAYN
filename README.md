@@ -2,18 +2,20 @@
 
 Репозиторій для HTML-прототипів, які публікуються через **GitHub Pages**.
 
+## Файли
+
+| Файл | Посилання |
+|------|-----------|
+| `ray_pixel_interactive.html` | 🔗 [Запустити](https://olehhebel.github.io/BRAYN/ray_pixel_interactive.html) |
+
 ## Як додати HTML-файл і отримати посилання
 
-1. Покладіть файл `index.html` у папку `docs/` (або будь-яку підпапку `docs/<назва>/`)
-2. У налаштуваннях репозиторію → **Settings → Pages** встановіть:
-   - **Source:** `Deploy from a branch`
-   - **Branch:** `main` / `docs`
-3. Через кілька хвилин файл стане доступним за посиланням:
+1. Покладіть файл у папку `docs/`
+2. GitHub Pages опублікує його за адресою:
+   ```
+   https://olehhebel.github.io/BRAYN/<назва-файлу>.html
+   ```
 
-```
-https://olehhebel.github.io/BRAYN/
-```
+---
 
-## Демо-сторінка
-
-🔗 **[Запустити →](https://olehhebel.github.io/BRAYN/)**
+🔗 **[ray_pixel_interactive.html → Запустити](https://olehhebel.github.io/BRAYN/ray_pixel_interactive.html)**
