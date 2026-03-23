@@ -555,11 +555,12 @@
     let particles = [];
 
     function resizeCanvas() {
-      fxCanvas.width = innerWidth * devicePixelRatio;
-      fxCanvas.height = innerHeight * devicePixelRatio;
+      const pixelRatio = window.devicePixelRatio || 1;
+      fxCanvas.width = innerWidth * pixelRatio;
+      fxCanvas.height = innerHeight * pixelRatio;
       fxCanvas.style.width = innerWidth + "px";
       fxCanvas.style.height = innerHeight + "px";
-      fxCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      fxCtx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       updateSlotRadius();
     }
 
