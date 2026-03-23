@@ -275,35 +275,44 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 144px;
+      width: clamp(68px, 15vw, 108px);
       transform:
         translate(-50%, -50%)
         rotate(var(--rot))
         translateY(calc(var(--radius) * -1))
         rotate(calc(var(--rot) * -1));
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
+      justify-content: flex-start;
+      gap: clamp(4px, 1vw, 8px);
+      padding: clamp(2px, .8vw, 6px) 0;
+      text-align: center;
       pointer-events: none;
       user-select: none;
     }
 
     .slot img {
-      width: 40px;
-      height: 40px;
+      width: clamp(28px, 6vw, 48px);
+      height: auto;
+      aspect-ratio: 1 / 1;
+      max-width: 100%;
       object-fit: contain;
-      flex: 0 0 40px;
+      flex: 0 0 auto;
       filter: drop-shadow(0 0 8px rgba(255,255,255,.25));
+      image-rendering: -webkit-optimize-contrast;
+      transform: translateZ(0);
     }
 
     .slot .value {
-      font-size: 22px;
+      min-width: 100%;
+      padding-inline: 2px;
+      font-size: clamp(16px, 2.9vw, 24px);
       font-weight: 900;
       line-height: 1;
       letter-spacing: .02em;
+      white-space: nowrap;
       text-shadow: 0 0 12px currentColor;
-      transform: translateX(4px);
     }
 
     .slot.neuron .value { color: var(--pink); }
@@ -418,9 +427,9 @@
       }
       .pill img { width: 22px; height: 22px; flex-basis: 22px; }
       .pill .count { font-size: 16px; }
-      .slot { width: 116px; gap: 12px; }
-      .slot img { width: 34px; height: 34px; flex-basis: 34px; }
-      .slot .value { font-size: 18px; }
+      .slot { width: clamp(62px, 17vw, 88px); gap: 4px; }
+      .slot img { width: clamp(26px, 5.5vw, 38px); }
+      .slot .value { font-size: clamp(15px, 4vw, 20px); }
       .pointer {
         border-left-width: 16px;
         border-right-width: 16px;
@@ -500,6 +509,38 @@
       }
     };
 
+    const SLOT_LAYOUT = {
+      fallbackDepthRatio: 0.18,
+      minSafeInset: 18,
+      safeInsetRatio: 0.08,
+      minRadiusRatio: 0.285
+    };
+
+    const FIREWORKS_CONFIG = {
+      minFadeRange: 0.001,
+      trailAlphaMultiplier: 0.28,
+      minTrailWidth: 0.5,
+      trailWidthMultiplier: 0.52,
+      twinkleFrequency: 0.45,
+      minParticleSize: 0.65,
+      layerVelocityOffset: 0.15,
+      cometMinUpwardBias: 1,
+      cometUpwardBiasRange: 1.4
+    };
+
+    const FIREWORK_PALETTE = {
+      subtleSpread: 18,
+      vividSpread: 30,
+      whiteMix: 0.3,
+      warmMix: 0.22
+    };
+
+    const FIREWORK_LAYERS = [
+      { name: "outer", count: 30, speedMin: 3.8, speedMax: 6.7, jitter: 0.12, sizeMin: 2.1, sizeMax: 4.8, gravityMin: 0.048, gravityMax: 0.082, lifeMin: 54, lifeMax: 84, dragMin: 0.964, dragMax: 0.976, trailMax: 4, glow: 20, fadeStart: 0.35, shrinkMin: 0.976, shrinkMax: 0.985, twinkle: 0.2 },
+      { name: "mid", count: 18, speedMin: 2.2, speedMax: 4.3, jitter: 0.22, sizeMin: 1.6, sizeMax: 3.2, gravityMin: 0.04, gravityMax: 0.07, lifeMin: 46, lifeMax: 72, dragMin: 0.972, dragMax: 0.984, trailMax: 3, glow: 15, fadeStart: 0.42, shrinkMin: 0.982, shrinkMax: 0.989, twinkle: 0.14 },
+      { name: "inner", count: 12, speedMin: 0.9, speedMax: 2.1, jitter: 0.34, sizeMin: 1.2, sizeMax: 2.4, gravityMin: 0.028, gravityMax: 0.052, lifeMin: 68, lifeMax: 104, dragMin: 0.984, dragMax: 0.992, trailMax: 2, glow: 10, fadeStart: 0.56, shrinkMin: 0.988, shrinkMax: 0.994, twinkle: 0.08 }
+    ];
+
     const wheel = document.getElementById("wheel");
     const bulbs = document.getElementById("bulbs");
     const spinBtn = document.getElementById("spinBtn");
@@ -524,7 +565,12 @@
 
     function updateSlotRadius() {
       const size = wheel.clientWidth;
-      const radius = size * 0.31;
+      const sampleSlot = wheel.querySelector(".slot");
+      if (!size || !sampleSlot) return;
+
+      const slotDepth = sampleSlot.getBoundingClientRect().height || size * SLOT_LAYOUT.fallbackDepthRatio;
+      const safeInset = Math.max(SLOT_LAYOUT.minSafeInset, size * SLOT_LAYOUT.safeInsetRatio);
+      const radius = Math.max(SLOT_LAYOUT.minRadiusRatio * size, size / 2 - safeInset - slotDepth / 2);
       wheel.querySelectorAll(".slot").forEach(slot => {
         slot.style.setProperty("--radius", radius + "px");
       });
@@ -705,46 +751,118 @@
       }
     }
 
+    function mixRgb(a, b, amount = 0.5) {
+      const interpolateChannel = (x, y) => Math.round(x + (y - x) * amount);
+      return {
+        r: interpolateChannel(a.r, b.r),
+        g: interpolateChannel(a.g, b.g),
+        b: interpolateChannel(a.b, b.b)
+      };
+    }
+
+    function rgbToCss({ r, g, b }) {
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function pickRandomItem(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function toRgba(color, alpha) {
+      if (color.startsWith("#")) {
+        const rgb = hexToRgb(color);
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+      }
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (!match) return `rgba(255, 255, 255, ${alpha})`;
+      return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+    }
+
+    function createFireworkPalette(base) {
+      const rgb = hexToRgb(base);
+      return [
+        varyColor(base, FIREWORK_PALETTE.subtleSpread),
+        varyColor(base, FIREWORK_PALETTE.vividSpread),
+        rgbToCss(mixRgb(rgb, { r: 255, g: 255, b: 255 }, FIREWORK_PALETTE.whiteMix)),
+        rgbToCss(mixRgb(rgb, { r: 255, g: 216, b: 124 }, FIREWORK_PALETTE.warmMix))
+      ];
+    }
+
+    function addParticle(config) {
+      particles.push({
+        ...config,
+        maxLife: config.life,
+        fadeRange: Math.max(FIREWORKS_CONFIG.minFadeRange, 1 - (config.fadeStart ?? 0.42)),
+        trail: [],
+        trailMax: config.trailMax ?? 0,
+        glow: config.glow ?? 14,
+        shrink: config.shrink ?? 0.988,
+        fadeStart: config.fadeStart ?? 0.42,
+        twinkle: config.twinkle ?? Math.random() * 0.18,
+        phase: config.phase ?? Math.random() * Math.PI * 2,
+        drift: config.drift ?? (Math.random() - 0.5) * 0.02
+      });
+    }
+
     function spawnFireworks(type) {
       const rect = wheel.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const base = CONFIG.colors[type];
+      const palette = createFireworkPalette(base);
 
-      for (let burst = 0; burst < 4; burst++) {
+      for (let burst = 0; burst < 5; burst++) {
         const angleOffset = Math.random() * Math.PI * 2;
-        const bx = cx + Math.cos(angleOffset) * (70 + Math.random() * 110);
-        const by = cy + Math.sin(angleOffset) * (70 + Math.random() * 110);
+        const orbit = 58 + Math.random() * 126;
+        const bx = cx + Math.cos(angleOffset) * orbit;
+        const by = cy + Math.sin(angleOffset) * orbit;
+        const twist = Math.random() * Math.PI * 2;
 
-        for (let i = 0; i < 55; i++) {
-          const a = (Math.PI * 2 * i) / 55 + Math.random() * 0.35;
-          const speed = 2 + Math.random() * 4.2;
-          particles.push({
+        FIREWORK_LAYERS.forEach((layer, layerIndex) => {
+          for (let i = 0; i < layer.count; i++) {
+            const a = twist + (Math.PI * 2 * i) / layer.count + (Math.random() - 0.5) * layer.jitter;
+            const speed = layer.speedMin + Math.random() * (layer.speedMax - layer.speedMin);
+            addParticle({
+              x: bx,
+              y: by,
+              vx: Math.cos(a) * speed,
+              vy: Math.sin(a) * speed - layerIndex * FIREWORKS_CONFIG.layerVelocityOffset,
+              g: layer.gravityMin + Math.random() * (layer.gravityMax - layer.gravityMin),
+              life: layer.lifeMin + Math.random() * (layer.lifeMax - layer.lifeMin),
+              size: layer.sizeMin + Math.random() * (layer.sizeMax - layer.sizeMin),
+              color: pickRandomItem(palette),
+              alpha: 1,
+              drag: layer.dragMin + Math.random() * (layer.dragMax - layer.dragMin),
+              trailMax: layer.trailMax,
+              glow: layer.glow,
+              fadeStart: layer.fadeStart,
+              shrink: layer.shrinkMin + Math.random() * (layer.shrinkMax - layer.shrinkMin),
+              twinkle: layer.twinkle,
+              drift: (Math.random() - 0.5) * 0.03
+            });
+          }
+        });
+
+        for (let comet = 0; comet < 8; comet++) {
+          const a = twist + (Math.random() - 0.5) * 1.1;
+          const speed = 4.4 + Math.random() * 2.4;
+          addParticle({
             x: bx,
             y: by,
             vx: Math.cos(a) * speed,
-            vy: Math.sin(a) * speed,
-            g: 0.05 + Math.random() * 0.04,
-            life: 45 + Math.random() * 28,
-            size: 1.4 + Math.random() * 3.6,
-            color: varyColor(base, 22),
+            vy: Math.sin(a) * speed - (FIREWORKS_CONFIG.cometMinUpwardBias + Math.random() * FIREWORKS_CONFIG.cometUpwardBiasRange),
+            g: 0.052 + Math.random() * 0.02,
+            life: 58 + Math.random() * 24,
+            size: 1.5 + Math.random() * 1.8,
+            color: pickRandomItem(palette),
             alpha: 1,
-            drag: 0.986 - Math.random() * 0.012
-          });
-        }
-
-        for (let j = 0; j < 24; j++) {
-          particles.push({
-            x: bx,
-            y: by,
-            vx: (Math.random() - 0.5) * 1.6,
-            vy: -(3 + Math.random() * 3.5),
-            g: 0.075,
-            life: 65 + Math.random() * 35,
-            size: 1.2 + Math.random() * 2.2,
-            color: varyColor(base, 35),
-            alpha: 1,
-            drag: 0.992
+            drag: 0.978 + Math.random() * 0.01,
+            trailMax: 5,
+            glow: 22,
+            fadeStart: 0.32,
+            shrink: 0.982,
+            twinkle: 0.22,
+            drift: (Math.random() - 0.5) * 0.018
           });
         }
       }
@@ -769,26 +887,58 @@
 
     function fxLoop() {
       fxCtx.clearRect(0, 0, innerWidth, innerHeight);
+      fxCtx.save();
+      fxCtx.globalCompositeOperation = "lighter";
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.vx *= p.drag;
+        p.vx = (p.vx + p.drift) * p.drag;
         p.vy = p.vy * p.drag + p.g;
         p.x += p.vx;
         p.y += p.vy;
         p.life -= 1;
-        p.alpha = Math.max(0, p.life / 70);
+        p.size *= p.shrink;
+
+        if (p.trailMax) {
+          p.trail.unshift({ x: p.x, y: p.y });
+          if (p.trail.length > p.trailMax) p.trail.length = p.trailMax;
+        }
+
+        const progress = 1 - p.life / p.maxLife;
+        const fadeProgress = progress < p.fadeStart
+          ? 1
+          : 1 - (progress - p.fadeStart) / p.fadeRange;
+        p.alpha = Math.max(0, Math.min(1, fadeProgress));
+
+        if (p.trail.length > 1) {
+          fxCtx.beginPath();
+          fxCtx.moveTo(p.trail[0].x, p.trail[0].y);
+          for (let t = 1; t < p.trail.length; t++) {
+            fxCtx.lineTo(p.trail[t].x, p.trail[t].y);
+          }
+          fxCtx.strokeStyle = toRgba(p.color, p.alpha * FIREWORKS_CONFIG.trailAlphaMultiplier);
+          fxCtx.lineWidth = Math.max(FIREWORKS_CONFIG.minTrailWidth, p.size * FIREWORKS_CONFIG.trailWidthMultiplier);
+          fxCtx.shadowBlur = p.glow;
+          fxCtx.shadowColor = p.color;
+          fxCtx.stroke();
+        }
+
+        const shimmer = p.twinkle
+          ? Math.max(0, 1 - p.twinkle * Math.sin((p.maxLife - p.life) * FIREWORKS_CONFIG.twinkleFrequency + p.phase))
+          : 1;
+        const drawSize = Math.max(FIREWORKS_CONFIG.minParticleSize, p.size * shimmer);
 
         fxCtx.beginPath();
-        fxCtx.fillStyle = p.color.replace("rgb", "rgba").replace(")", `,${p.alpha})`);
-        fxCtx.shadowBlur = 14;
+        fxCtx.fillStyle = toRgba(p.color, p.alpha);
+        fxCtx.shadowBlur = p.glow;
         fxCtx.shadowColor = p.color;
-        fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fxCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
         fxCtx.fill();
 
         if (p.life <= 0) particles.splice(i, 1);
       }
 
+      fxCtx.restore();
       requestAnimationFrame(fxLoop);
     }
 
