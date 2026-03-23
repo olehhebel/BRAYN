@@ -155,7 +155,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;
 }
 .wheel-segment-icon{
   position:absolute;
-  width:8.8%;
   aspect-ratio:1/1;
   object-fit:contain;
   transform-origin:center center;
@@ -316,11 +315,18 @@ const SEGMENTS = [
   {resource:'neuron', value:234, color:'#FF1296'},
 ];
 const SPIN_COST = 300;
+const ICON_BASE_PATH = 'assets/icons/';
 const RESOURCE_ICONS = Object.freeze({
-  neuron:'assets/icons/neuron.png',
-  axon:'assets/icons/axon.png',
-  min:'assets/icons/min.png',
+  neuron:`${ICON_BASE_PATH}neuron.png`,
+  axon:`${ICON_BASE_PATH}axon.png`,
+  min:`${ICON_BASE_PATH}min.png`,
 });
+const WHEEL_VIEWBOX_SIZE = 500;
+const WHEEL_CENTER = WHEEL_VIEWBOX_SIZE / 2;
+const WHEEL_RADIUS = 208;
+const WHEEL_ICON_RADIUS = 145;
+const WHEEL_ICON_SIZE = 44;
+const WHEEL_ICON_TOP_OFFSET = 54;
 const WEIGHTS  = SEGMENTS.map(()=>1);
 const SEG_N    = SEGMENTS.length;   // 8
 const SEG_DEG  = 360 / SEG_N;      // 45
@@ -370,67 +376,64 @@ function spinEase(t){
   return 0.08 + easeOutQuint(tt) * 0.92;
 }
 function normalizeAngle(a){ return ((a%360)+360)%360; }
+function wheelPoint(deg, r){
+  const rad=(deg-90)*Math.PI/180;
+  return [+(WHEEL_CENTER+r*Math.cos(rad)).toFixed(1), +(WHEEL_CENTER+r*Math.sin(rad)).toFixed(1)];
+}
 
 /* ── 4. WHEEL SVG BUILDER (values only; PNG icons are asset imgs) ── */
 function buildWheelSVG(){
-  const cx=250, cy=250, R=208;
+  const cx=WHEEL_CENTER, cy=WHEEL_CENTER, R=WHEEL_RADIUS;
   const N=SEGMENTS.length;
   const segAng=360/N;
   const segColors=['#1B1FB9','#1557FF'];
 
-  function pt(deg, r){
-    const rad=(deg-90)*Math.PI/180;
-    return [+(cx+r*Math.cos(rad)).toFixed(1), +(cy+r*Math.sin(rad)).toFixed(1)];
-  }
-
   let paths='', groups='';
   SEGMENTS.forEach((seg,i)=>{
     const s=i*segAng, e=(i+1)*segAng, mid=s+segAng/2;
-    const [x1,y1]=pt(s,R), [x2,y2]=pt(e,R);
+    const [x1,y1]=wheelPoint(s,R), [x2,y2]=wheelPoint(e,R);
     const col=segColors[i%2];
     paths+=`<path d="M${cx},${cy} L${x1},${y1} A${R},${R},0,0,1,${x2},${y2} Z" fill="${col}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>\n`;
     paths+=`<line x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>\n`;
 
-    const [gx,gy]=pt(mid,145);
+    const [gx,gy]=wheelPoint(mid,WHEEL_ICON_RADIUS);
     groups+=`<g transform="translate(${gx},${gy}) rotate(${mid.toFixed(1)})">\n`;
     groups+=`  <text x="0" y="24" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="900" fill="${seg.color}" filter="url(#fg)">${seg.value}</text>\n`;
     groups+=`</g>\n`;
   });
 
-  return `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 ${WHEEL_VIEWBOX_SIZE} ${WHEEL_VIEWBOX_SIZE}" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <filter id="fg" x="-60%" y="-60%" width="220%" height="220%">
     <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
     <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
 </defs>
-${paths}${groups}<circle cx="250" cy="250" r="76" fill="#07102e" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+${paths}${groups}<circle cx="${WHEEL_CENTER}" cy="${WHEEL_CENTER}" r="76" fill="#07102e" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
 </svg>`;
 }
 
 function initWheelSegmentIcons(){
   const layer = document.getElementById('wheel-segment-icons');
   if(!layer) return;
-
-  function pt(deg, r){
-    const rad=(deg-90)*Math.PI/180;
-    return [+(250+r*Math.cos(rad)).toFixed(1), +(250+r*Math.sin(rad)).toFixed(1)];
-  }
+  const iconWidthPct = (WHEEL_ICON_SIZE / WHEEL_VIEWBOX_SIZE) * 100;
+  const iconTranslateYPct = -(WHEEL_ICON_TOP_OFFSET / WHEEL_ICON_SIZE) * 100;
 
   layer.innerHTML = '';
   SEGMENTS.forEach((seg,i)=>{
+    const iconSrc = RESOURCE_ICONS[seg.resource];
+    if(!iconSrc) return;
     const mid = i * SEG_DEG + SEG_DEG/2;
-    const [x,y] = pt(mid,145);
+    const [x,y] = wheelPoint(mid,WHEEL_ICON_RADIUS);
     const icon = document.createElement('img');
     icon.className = 'wheel-segment-icon';
-    icon.src = RESOURCE_ICONS[seg.resource];
+    icon.src = iconSrc;
     icon.alt = '';
-    icon.width = 44;
-    icon.height = 44;
-    icon.decoding = 'async';
-    icon.style.left = `${(x / 500) * 100}%`;
-    icon.style.top = `${(y / 500) * 100}%`;
-    icon.style.transform = `translate(-50%,-122%) rotate(${mid.toFixed(1)}deg)`;
+    icon.loading = 'eager';
+    icon.style.width = `${iconWidthPct}%`;
+    icon.style.left = `${(x / WHEEL_VIEWBOX_SIZE) * 100}%`;
+    icon.style.top = `${(y / WHEEL_VIEWBOX_SIZE) * 100}%`;
+    icon.style.transform = `translate(-50%,${iconTranslateYPct}%) rotate(${mid.toFixed(1)}deg)`;
     layer.appendChild(icon);
   });
 }
