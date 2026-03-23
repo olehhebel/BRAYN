@@ -91,6 +91,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;
   0%{transform:scale(1)}40%{transform:scale(1.38)}70%{transform:scale(.9)}100%{transform:scale(1)}
 }
 .pill.pop .pill-icon img{animation:icon-bounce .45s ease-out}
+/* Flying reward icons */
+.fly-icon{
+  position:absolute;
+  pointer-events:none;
+  z-index:300;
+  width:32px;height:32px;
+  object-fit:contain;
+  will-change:transform,opacity;
+}
 .pill-count{
   font-size:15px;font-weight:800;letter-spacing:.4px;
   white-space:nowrap;min-width:26px;text-align:right;
@@ -244,7 +253,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;
       <div class="pill-icon">
         <img src="assets/icons/neuron.png" alt="neuron">
       </div>
-      <span class="pill-count neuron" id="count-neuron">300</span>
+      <span class="pill-count neuron" id="count-neuron">1000</span>
     </div>
     <div class="pill" id="pill-axon">
       <div class="pill-icon">
@@ -299,13 +308,14 @@ const SEG_N    = SEGMENTS.length;   // 8
 const SEG_DEG  = 360 / SEG_N;      // 45
 
 /* ── 2. RESOURCE STORE + LOCALSTORAGE ───────────────────── */
-const DEFAULTS = {neuron:300, axon:1, min:20};
+const DEFAULTS = {neuron:1000, axon:1, min:20};
 let store = {};
 (()=>{
   try{
     const saved = JSON.parse(localStorage.getItem('brayn_wof_brayn_store'));
     if(saved && typeof saved==='object'){
-      store = {...DEFAULTS, ...saved};
+      // neuron always resets to default on load (demo balance restore)
+      store = {...DEFAULTS, ...saved, neuron: DEFAULTS.neuron};
     } else {
       store = {...DEFAULTS};
     }
@@ -576,6 +586,7 @@ function onWinLand(){
     animateCount(seg.resource, store[seg.resource] - seg.value, store[seg.resource]);
     triggerWinGlow(seg.resource);
     launchFireworks(seg.resource);
+    launchIconFly(seg.resource);
     playSound('resource_add');
 
     setTimeout(()=>{
@@ -617,6 +628,80 @@ function triggerWinGlow(resource){
   }
 }
 
+/* ── 9b. FLYING ICON ANIMATION ──────────────────────────── */
+function launchIconFly(resource){
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const app  = document.getElementById('app');
+  const wrap = document.getElementById('wheel-wrap');
+  const pill = document.getElementById('pill-'+resource);
+  if(!app || !wrap || !pill) return;
+
+  const appRect  = app.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  const pillIcon = pill.querySelector('.pill-icon') || pill;
+  const pillRect = pillIcon.getBoundingClientRect();
+
+  const sx = (wrapRect.left + wrapRect.right)  / 2 - appRect.left;
+  const sy = (wrapRect.top  + wrapRect.bottom) / 2 - appRect.top;
+  const ex = (pillRect.left + pillRect.right)  / 2 - appRect.left;
+  const ey = (pillRect.top  + pillRect.bottom) / 2 - appRect.top;
+
+  const N = 6;
+  const STAGGER = 110; // ms between each icon launch
+
+  // standard easeInOutCubic: smooth acceleration + deceleration
+  function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+  function spawnOne(delay, idx){
+    setTimeout(()=>{
+      const el = document.createElement('img');
+      el.src = `assets/icons/${resource}.png`;
+      el.className = 'fly-icon';
+      el.style.left    = (sx - 16) + 'px';
+      el.style.top     = (sy - 16) + 'px';
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0)';
+      app.appendChild(el);
+
+      // Arc control point: above midpoint, slight lateral spread
+      const spread = (idx % 2 === 0 ? 1 : -1) * (30 + Math.random() * 60);
+      const cpx = (sx + ex) / 2 + spread;
+      const cpy = Math.min(sy, ey) - 90 - Math.random() * 70;
+      const dur  = 620 + Math.random() * 180;
+      const t0   = performance.now();
+
+      (function tick(now){
+        const raw  = Math.min(1, (now - t0) / dur);
+        const t    = easeInOutCubic(raw);
+        const mt   = 1 - t;
+
+        // Quadratic bezier path
+        const x = mt*mt*sx + 2*mt*t*cpx + t*t*ex;
+        const y = mt*mt*sy + 2*mt*t*cpy + t*t*ey;
+
+        // Scale: grow for first 20%, hold, shrink for last 25%
+        const sc  = raw < 0.20 ? raw / 0.20
+                  : raw > 0.75 ? (1 - raw) / 0.25
+                  : 1;
+        // Opacity: fade in first 10%, full, fade out last 20%
+        const op  = raw < 0.10 ? raw / 0.10
+                  : raw > 0.80 ? (1 - raw) / 0.20
+                  : 1;
+
+        el.style.left      = (x - 16) + 'px';
+        el.style.top       = (y - 16) + 'px';
+        el.style.opacity   = Math.max(0, op);
+        el.style.transform = `scale(${Math.max(0, sc)})`;
+
+        if(raw < 1){ requestAnimationFrame(tick); }
+        else        { el.remove(); }
+      })(performance.now());
+    }, delay);
+  }
+
+  for(let i = 0; i < N; i++) spawnOne(i * STAGGER, i);
+}
+
 /* ── 9. ADVANCED PARTICLE / FIREWORKS SYSTEM ─────────────── */
 const canvas = document.getElementById('fx-canvas');
 const ctx    = canvas.getContext('2d');
@@ -631,9 +716,9 @@ resizeCanvas();
 window.addEventListener('resize', ()=>{ resizeCanvas(); positionBulbs(); });
 
 const COLORS_BY_RES = {
-  neuron:   ['#FF1296','#FF70CC','#FF4DB8','#FFB0E0','#FF00AA'],
-  axon:     ['#D5F20E','#EEFF5A','#C2DC00','#F0FF70','#A8C800'],
-  min:      ['#00FFFF','#80FFFF','#00E5E5','#AAFFFF','#00CCCC'],
+  neuron: ['#FF1296','#FF4DB8','#FF70CC','#FFB0E0','#FF00AA','#CC006E','#FF87D4','#FF2DA0'],
+  axon:   ['#D5F20E','#EEFF5A','#C2DC00','#F0FF70','#A8C800','#B8E000','#DAFF20','#8FAF00'],
+  min:    ['#00FFFF','#80FFFF','#00E5E5','#AAFFFF','#00CCCC','#40FFFF','#00B8B8','#C8FFFF'],
 };
 
 function launchFireworks(resource){
@@ -663,67 +748,70 @@ function launchFireworks(resource){
 
   particles.push({type:'flash', x:wcx, y:wcy, r:0, maxR:140, color:cols[0], life:1, decay:0.038});
   setTimeout(()=>{
-    particles.push({type:'flash',x:wcx,y:wcy,r:0,maxR:95,color:cols[1]||cols[0],life:1,decay:0.052});
+    particles.push({type:'flash',x:wcx,y:wcy,r:0,maxR:110,color:cols[1]||cols[0],life:1,decay:0.048});
   }, 110);
+  setTimeout(()=>{
+    particles.push({type:'flash',x:wcx,y:wcy,r:0,maxR:70,color:cols[3]||cols[0],life:1,decay:0.062});
+  }, 200);
 
-  for(let i=0; i<70; i++){
-    const a=Math.random()*Math.PI*2, s=2.5+Math.random()*11;
+  for(let i=0; i<90; i++){
+    const a=Math.random()*Math.PI*2, s=3+Math.random()*16;
     particles.push({type:'spark', x:wcx, y:wcy,
-      vx:Math.cos(a)*s, vy:Math.sin(a)*s-1.8,
-      r:2+Math.random()*4.5, color:cols[i%cols.length],
-      life:1, decay:0.015+Math.random()*0.013, gravity:0.16});
-  }
-
-  for(let i=0; i<22; i++){
-    const a=Math.random()*Math.PI*2, s=7+Math.random()*15;
-    particles.push({type:'streak', x:wcx, y:wcy,
-      vx:Math.cos(a)*s, vy:Math.sin(a)*s-2.5,
-      r:1.5+Math.random()*2.5, color:cols[i%cols.length],
-      life:1, decay:0.026+Math.random()*0.02, gravity:0.11,
-      px:wcx, py:wcy});
+      vx:Math.cos(a)*s, vy:Math.sin(a)*s-2.2,
+      r:2.5+Math.random()*6, color:cols[i%cols.length],
+      life:1, decay:0.012+Math.random()*0.016, gravity:0.15});
   }
 
   for(let i=0; i<30; i++){
-    const a=Math.random()*Math.PI*2, s=1+Math.random()*3.5;
-    particles.push({type:'ember', x:wcx+(Math.random()-0.5)*60, y:wcy+(Math.random()-0.5)*60,
-      vx:Math.cos(a)*s*0.6+(Math.random()-0.5)*1.5, vy:Math.sin(a)*s*0.6-3.5-Math.random()*3,
-      r:1+Math.random()*2.5, color:cols[i%cols.length],
-      life:1, decay:0.008+Math.random()*0.007, gravity:0.24,
-      wobble:(Math.random()-0.5)*0.18});
+    const a=Math.random()*Math.PI*2, s=8+Math.random()*20;
+    particles.push({type:'streak', x:wcx, y:wcy,
+      vx:Math.cos(a)*s, vy:Math.sin(a)*s-3,
+      r:1.8+Math.random()*3, color:cols[i%cols.length],
+      life:1, decay:0.022+Math.random()*0.022, gravity:0.10,
+      px:wcx, py:wcy});
   }
 
-  for(let b=0; b<8; b++){
-    const ba=b*(Math.PI*2/8)+Math.random()*0.45;
-    const dist=wRadPx*(0.68+Math.random()*0.40);
+  for(let i=0; i<42; i++){
+    const a=Math.random()*Math.PI*2, s=1+Math.random()*4.5;
+    particles.push({type:'ember', x:wcx+(Math.random()-0.5)*80, y:wcy+(Math.random()-0.5)*80,
+      vx:Math.cos(a)*s*0.7+(Math.random()-0.5)*2, vy:Math.sin(a)*s*0.7-4-Math.random()*3.5,
+      r:1.2+Math.random()*3.2, color:cols[i%cols.length],
+      life:1, decay:0.007+Math.random()*0.008, gravity:0.22,
+      wobble:(Math.random()-0.5)*0.25});
+  }
+
+  for(let b=0; b<11; b++){
+    const ba=b*(Math.PI*2/11)+Math.random()*0.5;
+    const dist=wRadPx*(0.55+Math.random()*0.55);
     const fx=wcx+Math.cos(ba)*dist, fy=wcy+Math.sin(ba)*dist;
-    setTimeout(()=> spawnShell(fx, fy, cols), b*85+160);
+    setTimeout(()=> spawnShell(fx, fy, cols), b*75+140);
   }
 
   startFxLoop();
 }
 
 function spawnShell(ox, oy, cols){
-  for(let i=0; i<26; i++){
-    const a=Math.random()*Math.PI*2, s=1.8+Math.random()*5.5;
+  for(let i=0; i<34; i++){
+    const a=Math.random()*Math.PI*2, s=2.2+Math.random()*7.5;
     particles.push({type:'spark', x:ox, y:oy,
       vx:Math.cos(a)*s, vy:Math.sin(a)*s,
-      r:1.5+Math.random()*3, color:cols[i%cols.length],
-      life:1, decay:0.023+Math.random()*0.022, gravity:0.13});
-  }
-  for(let i=0; i<6; i++){
-    const a=Math.random()*Math.PI*2;
-    particles.push({type:'star', x:ox, y:oy,
-      vx:Math.cos(a)*1.8, vy:Math.sin(a)*1.8-0.5,
-      r:1.5+Math.random()*2, color:'#FFFFFF',
-      life:1, decay:0.027+Math.random()*0.02, gravity:0.07});
+      r:1.8+Math.random()*3.8, color:cols[i%cols.length],
+      life:1, decay:0.020+Math.random()*0.024, gravity:0.12});
   }
   for(let i=0; i<9; i++){
     const a=Math.random()*Math.PI*2;
+    particles.push({type:'star', x:ox, y:oy,
+      vx:Math.cos(a)*2.2, vy:Math.sin(a)*2.2-0.8,
+      r:1.8+Math.random()*2.5, color:'#FFFFFF',
+      life:1, decay:0.024+Math.random()*0.022, gravity:0.06});
+  }
+  for(let i=0; i<12; i++){
+    const a=Math.random()*Math.PI*2;
     particles.push({type:'ember', x:ox, y:oy,
-      vx:Math.cos(a)*1.8, vy:Math.sin(a)*1.8-2.2,
-      r:0.8+Math.random()*1.8, color:cols[i%cols.length],
-      life:1, decay:0.010+Math.random()*0.009, gravity:0.22,
-      wobble:(Math.random()-0.5)*0.16});
+      vx:Math.cos(a)*2.2, vy:Math.sin(a)*2.2-2.8,
+      r:1+Math.random()*2.2, color:cols[i%cols.length],
+      life:1, decay:0.009+Math.random()*0.010, gravity:0.20,
+      wobble:(Math.random()-0.5)*0.22});
   }
 }
 
