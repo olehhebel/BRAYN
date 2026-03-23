@@ -8,6 +8,7 @@
 |------|-----------|
 | `ray_pixel_interactive.html` | 🔗 [Запустити](https://olehhebel.github.io/BRAYN/ray_pixel_interactive.html) |
 | `prototypes/wheel-of-fortune/` | 🎡 [Запустити](https://olehhebel.github.io/BRAYN/prototypes/wheel-of-fortune/) |
+| `prototypes/wheel-of-fortune-brayn/` | 🧠 [Запустити](https://olehhebel.github.io/BRAYN/prototypes/wheel-of-fortune-brayn/) |
 
 ## Як додати HTML-файл і отримати посилання
 
@@ -22,3 +23,5 @@
 🔗 **[ray_pixel_interactive.html → Запустити](https://olehhebel.github.io/BRAYN/ray_pixel_interactive.html)**
 
 🎡 **[Wheel of Fortune → Запустити](https://olehhebel.github.io/BRAYN/prototypes/wheel-of-fortune/)**
+
+🧠 **[BRAYN Wheel (neuron/axon/min) → Запустити](https://olehhebel.github.io/BRAYN/prototypes/wheel-of-fortune-brayn/)**
