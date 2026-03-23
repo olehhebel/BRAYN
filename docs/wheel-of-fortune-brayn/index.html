@@ -395,6 +395,60 @@
       transform: translateX(-50%) translateY(-8px);
     }
 
+    .reward-burst {
+      --burst-color: rgba(255, 255, 255, .72);
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+    }
+
+    .reward-burst::before,
+    .reward-burst::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: 0;
+      transform: scale(.68);
+    }
+
+    .reward-burst::before {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.92) 0 10%, var(--burst-color) 22%, transparent 58%);
+      filter: blur(2px);
+    }
+
+    .reward-burst::after {
+      inset: 12%;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(255,255,255,.55) 0 18%, transparent 54%),
+        radial-gradient(circle at center, var(--burst-color) 0 28%, transparent 62%);
+      mix-blend-mode: screen;
+    }
+
+    .reward-burst.active::before {
+      animation: rewardBurstPulse .46s ease-out forwards;
+    }
+
+    .reward-burst.active::after {
+      animation: rewardBurstBlink .34s ease-out forwards;
+    }
+
+    @keyframes rewardBurstPulse {
+      0% { opacity: 0; transform: scale(.62); }
+      22% { opacity: .95; }
+      100% { opacity: 0; transform: scale(1.14); }
+    }
+
+    @keyframes rewardBurstBlink {
+      0% { opacity: 0; transform: scale(.4); }
+      26% { opacity: .82; }
+      100% { opacity: 0; transform: scale(1.02); }
+    }
+
     .flying-icon {
       position: fixed;
       width: 22px;
@@ -413,6 +467,87 @@
       height: 100%;
       pointer-events: none;
       z-index: 8;
+    }
+
+    .ray-pop {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: clamp(140px, 21vw, 220px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 14;
+      transform: translate3d(-50%, -50%, 0) scale(.82);
+      transform-origin: center bottom;
+      will-change: transform, opacity;
+      transition: opacity .18s ease-out;
+    }
+
+    .ray-pop.active {
+      opacity: 1;
+      animation: rayCelebrate 1.5s cubic-bezier(.22, .9, .24, 1) forwards;
+    }
+
+    .ray-pop canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: transparent;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,.34));
+    }
+
+    .ray-pop-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      width: 42%;
+      height: 12px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 72%);
+      transform: translateX(-50%) scale(1, 1);
+      opacity: .22;
+    }
+
+    .ray-pop.active .ray-pop-shadow {
+      animation: rayCelebrateShadow 1.5s ease-out forwards;
+    }
+
+    @keyframes rayCelebrate {
+      0% {
+        transform: translate3d(-50%, calc(-50% + 20px), 0) scale(.72);
+      }
+      14% {
+        transform: translate3d(-50%, calc(-50% + 12px), 0) scale(.94);
+      }
+      42% {
+        transform: translate3d(-50%, calc(-50% - 36px), 0) scale(1.12);
+      }
+      58% {
+        transform: translate3d(-50%, calc(-50% - 10px), 0) scale(1.04);
+      }
+      82% {
+        transform: translate3d(-50%, calc(-50% - 16px), 0) scale(1.02);
+      }
+      100% {
+        transform: translate3d(-50%, calc(-50% - 4px), 0) scale(.88);
+      }
+    }
+
+    @keyframes rayCelebrateShadow {
+      0% {
+        opacity: .26;
+        transform: translateX(-50%) scale(1.12, .94);
+      }
+      42% {
+        opacity: .12;
+        transform: translateX(-50%) scale(.72, .66);
+      }
+      100% {
+        opacity: .06;
+        transform: translateX(-50%) scale(.92, .82);
+      }
     }
 
     @media (max-width: 700px) {
@@ -460,6 +595,7 @@
     <main class="stage">
       <div class="wheel-wrap">
         <div class="pointer"></div>
+        <div class="reward-burst" id="rewardBurst" aria-hidden="true"></div>
         <div class="rim"></div>
         <div class="bulbs" id="bulbs"></div>
         <div class="wheel" id="wheel"></div>
@@ -477,6 +613,10 @@
     </main>
 
     <canvas id="fx"></canvas>
+    <div class="ray-pop" id="rayPop" aria-hidden="true">
+      <div class="ray-pop-shadow" id="rayPopShadow"></div>
+      <canvas id="rayCanvas" width="60" height="96" aria-label="Celebrating Ray Pixel character"></canvas>
+    </div>
   </div>
 
   <script>
@@ -545,21 +685,37 @@
     const bulbs = document.getElementById("bulbs");
     const spinBtn = document.getElementById("spinBtn");
     const msg = document.getElementById("message");
+    const rewardBurst = document.getElementById("rewardBurst");
     const fxCanvas = document.getElementById("fx");
     const fxCtx = fxCanvas.getContext("2d");
+    const rayPop = document.getElementById("rayPop");
+    const rayPopShadow = document.getElementById("rayPopShadow");
+    const rayCanvas = document.getElementById("rayCanvas");
+    const rayCtx = rayCanvas.getContext("2d");
+    const isCoarsePointer = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+    const particlePool = [];
+    const colorChannelCache = new Map();
+    const RAY_SOURCE_PATH = "../ray_pixel_interactive.html";
+    const rayState = {
+      jumpPose: null,
+      loadPromise: null,
+      token: 0
+    };
 
     let balances = { ...CONFIG.defaultBalances };
     let currentRotation = 0;
     let spinning = false;
     let bulbTimer = null;
     let particles = [];
+    rayCtx.imageSmoothingEnabled = false;
 
     function resizeCanvas() {
-      fxCanvas.width = innerWidth * devicePixelRatio;
-      fxCanvas.height = innerHeight * devicePixelRatio;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, isCoarsePointer ? 1.25 : 1.5);
+      fxCanvas.width = innerWidth * pixelRatio;
+      fxCanvas.height = innerHeight * pixelRatio;
       fxCanvas.style.width = innerWidth + "px";
       fxCanvas.style.height = innerHeight + "px";
-      fxCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      fxCtx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       updateSlotRadius();
     }
 
@@ -764,18 +920,29 @@
       return `rgb(${r}, ${g}, ${b})`;
     }
 
-    function pickRandomItem(items) {
-      return items[Math.floor(Math.random() * items.length)];
+    function getColorChannels(color) {
+      if (colorChannelCache.has(color)) return colorChannelCache.get(color);
+
+      let channels;
+      if (color.startsWith("#")) {
+        channels = hexToRgb(color);
+      } else {
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+        channels = match
+          ? { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) }
+          : { r: 255, g: 255, b: 255 };
+      }
+
+      colorChannelCache.set(color, channels);
+      return channels;
     }
 
-    function toRgba(color, alpha) {
-      if (color.startsWith("#")) {
-        const rgb = hexToRgb(color);
-        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
-      }
-      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-      if (!match) return `rgba(255, 255, 255, ${alpha})`;
-      return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+    function rgbaFromChannels(channels, alpha) {
+      return `rgba(${channels.r}, ${channels.g}, ${channels.b}, ${alpha})`;
+    }
+
+    function pickRandomItem(items) {
+      return items[Math.floor(Math.random() * items.length)];
     }
 
     function createFireworkPalette(base) {
@@ -788,20 +955,41 @@
       ];
     }
 
+    function getParticleLimit() {
+      return isCoarsePointer || innerWidth < 700 ? 180 : 320;
+    }
+
+    function recycleParticleAt(index) {
+      const particle = particles[index];
+      particle.trail.length = 0;
+      particlePool.push(particle);
+
+      const last = particles.pop();
+      if (index < particles.length) {
+        particles[index] = last;
+      }
+    }
+
     function addParticle(config) {
-      particles.push({
-        ...config,
+      if (particles.length >= getParticleLimit()) return false;
+
+      const particle = particlePool.pop() || { trail: [] };
+      particle.trail.length = 0;
+      Object.assign(particle, config, {
         maxLife: config.life,
         fadeRange: Math.max(FIREWORKS_CONFIG.minFadeRange, 1 - (config.fadeStart ?? 0.42)),
-        trail: [],
         trailMax: config.trailMax ?? 0,
         glow: config.glow ?? 14,
         shrink: config.shrink ?? 0.988,
         fadeStart: config.fadeStart ?? 0.42,
         twinkle: config.twinkle ?? Math.random() * 0.18,
         phase: config.phase ?? Math.random() * Math.PI * 2,
-        drift: config.drift ?? (Math.random() - 0.5) * 0.02
+        drift: config.drift ?? (Math.random() - 0.5) * 0.02,
+        channels: getColorChannels(config.color)
       });
+
+      particles.push(particle);
+      return true;
     }
 
     function spawnFireworks(type) {
@@ -810,8 +998,14 @@
       const cy = rect.top + rect.height / 2;
       const base = CONFIG.colors[type];
       const palette = createFireworkPalette(base);
+      const particleLimit = getParticleLimit();
+      const available = particleLimit - particles.length;
+      if (available < 24) return;
 
-      for (let burst = 0; burst < 5; burst++) {
+      const intensity = (isCoarsePointer || innerWidth < 700 ? 0.58 : 0.8) * Math.min(1, available / particleLimit + 0.2);
+      const burstCount = Math.max(2, Math.min(isCoarsePointer || innerWidth < 700 ? 3 : 4, Math.floor(available / 36)));
+
+      for (let burst = 0; burst < burstCount; burst++) {
         const angleOffset = Math.random() * Math.PI * 2;
         const orbit = 58 + Math.random() * 126;
         const bx = cx + Math.cos(angleOffset) * orbit;
@@ -819,10 +1013,11 @@
         const twist = Math.random() * Math.PI * 2;
 
         FIREWORK_LAYERS.forEach((layer, layerIndex) => {
-          for (let i = 0; i < layer.count; i++) {
-            const a = twist + (Math.PI * 2 * i) / layer.count + (Math.random() - 0.5) * layer.jitter;
+          const particleCount = Math.max(layer.name === "inner" ? 4 : 6, Math.round(layer.count * intensity));
+          for (let i = 0; i < particleCount; i++) {
+            const a = twist + (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * layer.jitter;
             const speed = layer.speedMin + Math.random() * (layer.speedMax - layer.speedMin);
-            addParticle({
+            if (!addParticle({
               x: bx,
               y: by,
               vx: Math.cos(a) * speed,
@@ -839,14 +1034,15 @@
               shrink: layer.shrinkMin + Math.random() * (layer.shrinkMax - layer.shrinkMin),
               twinkle: layer.twinkle,
               drift: (Math.random() - 0.5) * 0.03
-            });
+            })) return;
           }
         });
 
-        for (let comet = 0; comet < 8; comet++) {
+        const cometCount = Math.max(2, Math.round((isCoarsePointer || innerWidth < 700 ? 4 : 6) * intensity));
+        for (let comet = 0; comet < cometCount; comet++) {
           const a = twist + (Math.random() - 0.5) * 1.1;
           const speed = 4.4 + Math.random() * 2.4;
-          addParticle({
+          if (!addParticle({
             x: bx,
             y: by,
             vx: Math.cos(a) * speed,
@@ -863,9 +1059,18 @@
             shrink: 0.982,
             twinkle: 0.22,
             drift: (Math.random() - 0.5) * 0.018
-          });
+          })) return;
         }
       }
+    }
+
+    function triggerRewardBurst(type) {
+      rewardBurst.style.setProperty("--burst-color", CONFIG.colors[type]);
+      rewardBurst.classList.remove("active");
+      void rewardBurst.offsetWidth;
+      rewardBurst.classList.add("active");
+      clearTimeout(triggerRewardBurst._t);
+      triggerRewardBurst._t = setTimeout(() => rewardBurst.classList.remove("active"), 520);
     }
 
     function hexToRgb(hex) {
@@ -885,6 +1090,61 @@
       return `rgb(${clamp(c.r + drift())}, ${clamp(c.g + drift())}, ${clamp(c.b + drift())})`;
     }
 
+    async function loadRayJumpPose() {
+      if (rayState.jumpPose) return rayState.jumpPose;
+      if (!rayState.loadPromise) {
+        rayState.loadPromise = fetch(RAY_SOURCE_PATH)
+          .then(response => response.text())
+          .then(source => {
+            const start = source.indexOf("jump:");
+            const end = source.indexOf("\n\n};", start);
+            if (start === -1 || end === -1) throw new Error("Ray jump pose source not found");
+            const rawPose = source
+              .slice(start + 5, end)
+              .trim()
+              .replace(/,$/, "")
+              .replace(/(\bpalette\b|\brows\b)\s*:/g, '"$1":');
+            rayState.jumpPose = JSON.parse(rawPose);
+            return rayState.jumpPose;
+          })
+          .catch(error => {
+            rayState.loadPromise = null;
+            throw error;
+          });
+      }
+
+      return rayState.loadPromise;
+    }
+
+    function renderRayJumpPose(pose) {
+      rayCtx.clearRect(0, 0, rayCanvas.width, rayCanvas.height);
+      for (let y = 0; y < pose.rows.length; y++) {
+        const row = pose.rows[y];
+        for (let x = 0; x < row.length; x++) {
+          const index = row[x];
+          if (index === 0) continue;
+          rayCtx.fillStyle = pose.palette[index];
+          rayCtx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    async function playRayCelebration() {
+      rayState.token += 1;
+
+      try {
+        const pose = await loadRayJumpPose();
+        renderRayJumpPose(pose);
+        rayPop.classList.remove("active");
+        void rayPop.offsetWidth;
+        rayPop.classList.add("active");
+        clearTimeout(playRayCelebration._t);
+        playRayCelebration._t = setTimeout(() => rayPop.classList.remove("active"), 1500);
+      } catch (error) {
+        console.error("Unable to load Ray jump pose", error);
+      }
+    }
+
     function fxLoop() {
       fxCtx.clearRect(0, 0, innerWidth, innerHeight);
       fxCtx.save();
@@ -898,6 +1158,12 @@
         p.y += p.vy;
         p.life -= 1;
         p.size *= p.shrink;
+
+        const offscreen = p.x < -28 || p.x > innerWidth + 28 || p.y < -28 || p.y > innerHeight + 28;
+        if (p.life <= 0 || p.size <= 0.32 || offscreen) {
+          recycleParticleAt(i);
+          continue;
+        }
 
         if (p.trailMax) {
           p.trail.unshift({ x: p.x, y: p.y });
@@ -916,9 +1182,9 @@
           for (let t = 1; t < p.trail.length; t++) {
             fxCtx.lineTo(p.trail[t].x, p.trail[t].y);
           }
-          fxCtx.strokeStyle = toRgba(p.color, p.alpha * FIREWORKS_CONFIG.trailAlphaMultiplier);
+          fxCtx.strokeStyle = rgbaFromChannels(p.channels, p.alpha * FIREWORKS_CONFIG.trailAlphaMultiplier);
           fxCtx.lineWidth = Math.max(FIREWORKS_CONFIG.minTrailWidth, p.size * FIREWORKS_CONFIG.trailWidthMultiplier);
-          fxCtx.shadowBlur = p.glow;
+          fxCtx.shadowBlur = p.size > 1.35 ? p.glow : 0;
           fxCtx.shadowColor = p.color;
           fxCtx.stroke();
         }
@@ -928,14 +1194,16 @@
           : 1;
         const drawSize = Math.max(FIREWORKS_CONFIG.minParticleSize, p.size * shimmer);
 
-        fxCtx.beginPath();
-        fxCtx.fillStyle = toRgba(p.color, p.alpha);
-        fxCtx.shadowBlur = p.glow;
+        fxCtx.fillStyle = rgbaFromChannels(p.channels, p.alpha);
+        fxCtx.shadowBlur = drawSize > 1.35 ? p.glow : 0;
         fxCtx.shadowColor = p.color;
-        fxCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
-        fxCtx.fill();
-
-        if (p.life <= 0) particles.splice(i, 1);
+        if (drawSize <= 1.35) {
+          fxCtx.fillRect(p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
+        } else {
+          fxCtx.beginPath();
+          fxCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
+          fxCtx.fill();
+        }
       }
 
       fxCtx.restore();
@@ -950,7 +1218,9 @@
       tweenBalance(reward.type, from, balances[reward.type], 820);
       pulsePill(reward.type);
       flyRewardIcons(reward.type, reward.value);
+      triggerRewardBurst(reward.type);
       spawnFireworks(reward.type);
+      playRayCelebration();
       showMessage(`+${reward.value} ${reward.type}`);
     }
 
@@ -978,6 +1248,7 @@
     renderBulbs();
     renderBalances();
     resizeCanvas();
+    loadRayJumpPose().catch(() => {});
     startBulbLoop(220);
     requestAnimationFrame(fxLoop);
   </script>
