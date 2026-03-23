@@ -1,0 +1,124 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- Glow filter -->
+  <filter id="fg" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <!-- Neuron (pink flower) -->
+  <symbol id="ic-neuron" viewBox="0 0 60 60">
+    <ellipse cx="30" cy="11" rx="8" ry="13" fill="#FF1296"/>
+    <ellipse cx="30" cy="49" rx="8" ry="13" fill="#FF1296"/>
+    <ellipse cx="11" cy="30" rx="13" ry="8" fill="#FF1296"/>
+    <ellipse cx="49" cy="30" rx="13" ry="8" fill="#FF1296"/>
+    <ellipse cx="17" cy="17" rx="8" ry="13" transform="rotate(45 17 17)" fill="#FF1296" opacity=".85"/>
+    <ellipse cx="43" cy="43" rx="8" ry="13" transform="rotate(45 43 43)" fill="#FF1296" opacity=".85"/>
+    <ellipse cx="43" cy="17" rx="8" ry="13" transform="rotate(-45 43 17)" fill="#FF1296" opacity=".85"/>
+    <ellipse cx="17" cy="43" rx="8" ry="13" transform="rotate(-45 17 43)" fill="#FF1296" opacity=".85"/>
+    <circle cx="30" cy="30" r="9" fill="#FFD700"/>
+  </symbol>
+
+  <!-- Axon (lime alpha symbol) -->
+  <symbol id="ic-axon" viewBox="0 0 60 60">
+    <!-- ring arc — open on lower-right -->
+    <path d="M 51,28 A 22,22 0 1 0 44,47" stroke="#D5F20E" stroke-width="9"
+          fill="none" stroke-linecap="round"/>
+    <!-- diagonal tail -->
+    <line x1="44" y1="43" x2="56" y2="57" stroke="#D5F20E" stroke-width="8"
+          stroke-linecap="round"/>
+    <!-- highlights -->
+    <path d="M 51,28 A 22,22 0 1 0 44,47" stroke="rgba(255,255,255,.45)"
+          stroke-width="3" fill="none" stroke-linecap="round"/>
+    <line x1="44" y1="43" x2="56" y2="57" stroke="rgba(255,255,255,.45)"
+          stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Min (cyan lightning bolt) -->
+  <symbol id="ic-min" viewBox="0 0 60 60">
+    <polygon points="37,5 19,32 31,32 23,55 43,26 30,26" fill="#00FFFF"/>
+    <polygon points="37,5 19,32 31,32 23,55 43,26 30,26"
+             fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+  </symbol>
+</defs>
+
+
+  <!-- seg 0: axon 20 -->
+  <path d="M250.0,250.0 L250.0,42.0 A208,208,0,0,1,397.1,102.9 Z" fill="#1B1FB9" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="250.0" y2="42.0" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(305.5,116.0) rotate(22.5)">
+    <use href="#ic-axon" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#D5F20E" filter="url(#fg)">20</text>
+  </g>
+  <!-- seg 1: neuron 5 -->
+  <path d="M250.0,250.0 L397.1,102.9 A208,208,0,0,1,458.0,250.0 Z" fill="#1557FF" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="397.1" y2="102.9" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(384.0,194.5) rotate(67.5)">
+    <use href="#ic-neuron" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#FF1296" filter="url(#fg)">5</text>
+  </g>
+  <!-- seg 2: axon 300 -->
+  <path d="M250.0,250.0 L458.0,250.0 A208,208,0,0,1,397.1,397.1 Z" fill="#1B1FB9" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="458.0" y2="250.0" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(384.0,305.5) rotate(112.5)">
+    <use href="#ic-axon" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#D5F20E" filter="url(#fg)">300</text>
+  </g>
+  <!-- seg 3: min 35 -->
+  <path d="M250.0,250.0 L397.1,397.1 A208,208,0,0,1,250.0,458.0 Z" fill="#1557FF" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="397.1" y2="397.1" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(305.5,384.0) rotate(157.5)">
+    <use href="#ic-min" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#00FFFF" filter="url(#fg)">35</text>
+  </g>
+  <!-- seg 4: neuron 5 -->
+  <path d="M250.0,250.0 L250.0,458.0 A208,208,0,0,1,102.9,397.1 Z" fill="#1B1FB9" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="250.0" y2="458.0" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(194.5,384.0) rotate(202.5)">
+    <use href="#ic-neuron" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#FF1296" filter="url(#fg)">5</text>
+  </g>
+  <!-- seg 5: axon 2 -->
+  <path d="M250.0,250.0 L102.9,397.1 A208,208,0,0,1,42.0,250.0 Z" fill="#1557FF" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="102.9" y2="397.1" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(116.0,305.5) rotate(247.5)">
+    <use href="#ic-axon" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#D5F20E" filter="url(#fg)">2</text>
+  </g>
+  <!-- seg 6: min 2 -->
+  <path d="M250.0,250.0 L42.0,250.0 A208,208,0,0,1,102.9,102.9 Z" fill="#1B1FB9" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="42.0" y2="250.0" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(116.0,194.5) rotate(292.5)">
+    <use href="#ic-min" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#00FFFF" filter="url(#fg)">2</text>
+  </g>
+  <!-- seg 7: neuron 234 -->
+  <path d="M250.0,250.0 L102.9,102.9 A208,208,0,0,1,250.0,42.0 Z" fill="#1557FF" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <line x1="250" y1="250" x2="102.9" y2="102.9" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+  <g transform="translate(194.5,116.0) rotate(337.5)">
+    <use href="#ic-neuron" x="-22" y="-42" width="44" height="44" filter="url(#fg)"/>
+    <text x="0" y="16" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif"
+      font-size="20" font-weight="900" fill="#FF1296" filter="url(#fg)">234</text>
+  </g>
+
+<!-- Centre mask: r=76 ≈ 500×0.152.
+     Matches the GO button's clamp(96px,27%,130px) rendered radius
+     at typical 480 px container width: 480×0.27/2 ≈ 65 px → 76/250 × 480/2 ≈ 73 px.
+     Sized to fully hide the wedge tips while leaving the button overlay visible. -->
+<circle cx="250" cy="250" r="76" fill="#07102e" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+</svg>
