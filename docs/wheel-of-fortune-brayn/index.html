@@ -148,6 +148,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;
   transform-origin:center center;
   pointer-events:none;
 }
+#wheel-segment-icons{
+  position:absolute;inset:0;
+  transform-origin:center center;
+  pointer-events:none;
+}
+.wheel-segment-icon{
+  position:absolute;
+  width:8.8%;
+  aspect-ratio:1/1;
+  object-fit:contain;
+  transform-origin:center center;
+}
 
 /* Pointer: lime triangle pointing downward, fixed at 12 o'clock */
 #pointer{
@@ -274,6 +286,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;
     <div id="rim-ring"></div>
     <div id="bulb-ring"></div>
     <img id="wheel-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="wheel">
+    <div id="wheel-segment-icons" aria-hidden="true"></div>
     <div id="pointer"></div>
     <button id="go-btn" aria-label="Spin the wheel for 300 neurons">
       <span id="go-btn-label">GO</span>
@@ -303,6 +316,11 @@ const SEGMENTS = [
   {resource:'neuron', value:234, color:'#FF1296'},
 ];
 const SPIN_COST = 300;
+const RESOURCE_ICONS = Object.freeze({
+  neuron:'assets/icons/neuron.png',
+  axon:'assets/icons/axon.png',
+  min:'assets/icons/min.png',
+});
 const WEIGHTS  = SEGMENTS.map(()=>1);
 const SEG_N    = SEGMENTS.length;   // 8
 const SEG_DEG  = 360 / SEG_N;      // 45
@@ -353,17 +371,8 @@ function spinEase(t){
 }
 function normalizeAngle(a){ return ((a%360)+360)%360; }
 
-/* ── 4. WHEEL SVG BUILDER (PNG icons from pill elements) ── */
+/* ── 4. WHEEL SVG BUILDER (values only; PNG icons are asset imgs) ── */
 function buildWheelSVG(){
-  const neuronImg = document.querySelector('#pill-neuron .pill-icon img');
-  const axonImg   = document.querySelector('#pill-axon .pill-icon img');
-  const minImg    = document.querySelector('#pill-min .pill-icon img');
-
-  function makeSym(id, imgEl){
-    if(!imgEl) return '';
-    return `<symbol id="${id}" viewBox="0 0 128 128"><image href="${imgEl.src}" width="128" height="128" preserveAspectRatio="xMidYMid meet"/></symbol>`;
-  }
-
   const cx=250, cy=250, R=208;
   const N=SEGMENTS.length;
   const segAng=360/N;
@@ -384,7 +393,6 @@ function buildWheelSVG(){
 
     const [gx,gy]=pt(mid,145);
     groups+=`<g transform="translate(${gx},${gy}) rotate(${mid.toFixed(1)})">\n`;
-    groups+=`  <use href="#ic-${seg.resource}" x="-22" y="-54" width="44" height="44" filter="url(#fg)"/>\n`;
     groups+=`  <text x="0" y="24" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="900" fill="${seg.color}" filter="url(#fg)">${seg.value}</text>\n`;
     groups+=`</g>\n`;
   });
@@ -395,12 +403,36 @@ function buildWheelSVG(){
     <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
     <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
-  ${makeSym('ic-neuron',neuronImg)}
-  ${makeSym('ic-axon',axonImg)}
-  ${makeSym('ic-min',minImg)}
 </defs>
 ${paths}${groups}<circle cx="250" cy="250" r="76" fill="#07102e" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
 </svg>`;
+}
+
+function initWheelSegmentIcons(){
+  const layer = document.getElementById('wheel-segment-icons');
+  if(!layer) return;
+
+  function pt(deg, r){
+    const rad=(deg-90)*Math.PI/180;
+    return [+(250+r*Math.cos(rad)).toFixed(1), +(250+r*Math.sin(rad)).toFixed(1)];
+  }
+
+  layer.innerHTML = '';
+  SEGMENTS.forEach((seg,i)=>{
+    const mid = i * SEG_DEG + SEG_DEG/2;
+    const [x,y] = pt(mid,145);
+    const icon = document.createElement('img');
+    icon.className = 'wheel-segment-icon';
+    icon.src = RESOURCE_ICONS[seg.resource];
+    icon.alt = '';
+    icon.width = 44;
+    icon.height = 44;
+    icon.decoding = 'async';
+    icon.style.left = `${(x / 500) * 100}%`;
+    icon.style.top = `${(y / 500) * 100}%`;
+    icon.style.transform = `translate(-50%,-122%) rotate(${mid.toFixed(1)}deg)`;
+    layer.appendChild(icon);
+  });
 }
 
 function initWheelSVG(){
@@ -512,8 +544,10 @@ function targetAngleForSeg(segIdx, currentAngle){
 }
 
 function applyWheelRotation(angle){
-  const img = document.getElementById('wheel-img');
-  if(img) img.style.transform = `rotate(${angle}deg)`;
+  ['wheel-img','wheel-segment-icons'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.transform = `rotate(${angle}deg)`;
+  });
 }
 
 function startSpin(){
@@ -1017,7 +1051,8 @@ function initListeners(){
 /* ── 13. INIT ───────────────────────────────────────────── */
 function init(){
   buildBulbs();
-  initWheelSVG();         // build wheel SVG with actual PNG icons
+  initWheelSVG();
+  initWheelSegmentIcons();
   applyWheelRotation(wheelAngle);
   setBulbState('idle');
   initListeners();
