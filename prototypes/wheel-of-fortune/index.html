@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BRAYN – Wheel of Fortune</title>
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────── */
+:root{
+  --bg:#000000;
+  --deep-blue:#0E15AB;
+  --slot-dark:#1B1FB9;
+  --slot-light:#1557FF;
+  --rim-pink:#E3007B;
+  --ui-pink:#FF1296;
+  --ui-cyan:#00FFFF;
+  --ui-lime:#D5F20E;
+  --text:#FFFFFF;
+  --shadow:rgba(0,0,0,.38);
+  --glow-pink:0 0 8px #FF1296,0 0 20px #FF129666;
+  --glow-cyan:0 0 8px #00FFFF,0 0 20px #00FFFF66;
+  --glow-lime:0 0 8px #D5F20E,0 0 20px #D5F20E66;
+}
+/* ── RESET ──────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif}
+/* ── APP SHELL ──────────────────────────────────────────── */
+#app{
+  position:relative;
+  width:100vw;height:100vh;
+  max-width:430px;
+  margin:0 auto;
+  overflow:hidden;
+}
+#bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 25%,#1a3a8a 0%,#0a0f5a 40%,#020510 80%),
+    radial-gradient(ellipse 80% 50% at 50% 85%,#0a1545 0%,#000510 60%);
+  background-image:url('assets/bg/lobby-wheel-bg.png');
+  background-size:cover;background-position:center top;
+}
+/* particle canvas */
+#fx-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;
+  z-index:200;
+}
+/* ── RESOURCE BAR ───────────────────────────────────────── */
+#resource-bar{
+  position:absolute;top:0;left:0;right:0;
+  z-index:100;
+  display:flex;justify-content:center;align-items:center;
+  gap:10px;
+  padding:env(safe-area-inset-top, 14px) 16px 10px;
+  padding-top:max(env(safe-area-inset-top,0px),14px);
+  background:linear-gradient(to bottom,rgba(0,0,0,.75) 60%,transparent);
+}
+.pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(5,8,30,.6);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;
+  padding:5px 12px 5px 5px;
+  backdrop-filter:blur(12px);
+  transition:transform .15s ease,box-shadow .3s ease,border-color .3s ease;
+}
+.pill.win-glow-flower{box-shadow:0 0 18px rgba(255,18,150,.7);border-color:rgba(255,18,150,.5)}
+.pill.win-glow-ring  {box-shadow:0 0 18px rgba(213,242,14,.7);border-color:rgba(213,242,14,.5)}
+.pill.win-glow-lightning{box-shadow:0 0 18px rgba(0,255,255,.7);border-color:rgba(0,255,255,.5)}
+.pill-icon{
+  width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.pill-icon img,.pill-icon svg{
+  width:26px;height:26px;
+  object-fit:contain;
+}
+@keyframes icon-bounce{
+  0%{transform:scale(1)}40%{transform:scale(1.35)}70%{transform:scale(.9)}100%{transform:scale(1)}
+}
+.pill.pop .pill-icon img,
+.pill.pop .pill-icon svg{animation:icon-bounce .45s ease-out}
+.pill-count{
+  font-size:15px;font-weight:800;letter-spacing:.4px;white-space:nowrap;
+  min-width:26px;text-align:right;
+}
+.pill-count.flower{color:var(--ui-pink);text-shadow:var(--glow-pink)}
+.pill-count.ring   {color:var(--ui-lime);text-shadow:var(--glow-lime)}
+.pill-count.lightning{color:var(--ui-cyan);text-shadow:var(--glow-cyan)}
+/* ── WHEEL WRAPPER ──────────────────────────────────────── */
+#wheel-wrap{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-44%);
+  width:min(92vw,480px);
+  aspect-ratio:1/1;
+}
+#wheel-svg{
+  width:100%;height:100%;
+  overflow:visible;
+  filter:drop-shadow(0 16px 48px rgba(0,0,0,.7));
+}
+/* scale pulse on spin start */
+@keyframes wheel-pulse{
+  0%{transform:translate(-50%,-44%) scale(1)}
+  40%{transform:translate(-50%,-44%) scale(1.035)}
+  100%{transform:translate(-50%,-44%) scale(1)}
+}
+#wheel-wrap.pulse-start{animation:wheel-pulse .35s ease-out}
+/* ── GO BUTTON ──────────────────────────────────────────── */
+#go-btn{cursor:pointer;user-select:none}
+#go-btn.disabled{cursor:not-allowed;opacity:.65;pointer-events:none}
+#go-circle{
+  transform-box:fill-box;
+  transform-origin:center center;
+  transition:transform .12s ease,filter .12s ease;
+}
+#go-btn:not(.disabled):active #go-circle,
+#go-btn.pressed #go-circle{
+  transform:scale(0.93);
+  filter:brightness(0.85);
+}
+/* ── REDUCED MOTION ─────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  .pill{transition:none}
+  #go-circle{transition:none}
+  @keyframes icon-bounce{from{}to{}}
+  @keyframes wheel-pulse{from{}to{}}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="bg"></div>
+  <canvas id="fx-canvas"></canvas>
+
+  <!-- Resource Bar -->
+  <div id="resource-bar">
+    <div class="pill" id="pill-flower">
+      <div class="pill-icon" id="icon-wrap-flower">
+        <img src="assets/icons/resource-flower.png" alt="flower"
+             onerror="this.outerHTML=ICONS.flower">
+      </div>
+      <span class="pill-count flower" id="count-flower">300</span>
+    </div>
+    <div class="pill" id="pill-ring">
+      <div class="pill-icon" id="icon-wrap-ring">
+        <img src="assets/icons/resource-ring.png" alt="ring"
+             onerror="this.outerHTML=ICONS.ring">
+      </div>
+      <span class="pill-count ring" id="count-ring">1</span>
+    </div>
+    <div class="pill" id="pill-lightning">
+      <div class="pill-icon" id="icon-wrap-lightning">
+        <img src="assets/icons/resource-lightning.png" alt="lightning"
+             onerror="this.outerHTML=ICONS.lightning">
+      </div>
+      <span class="pill-count lightning" id="count-lightning">20</span>
+    </div>
+  </div>
+
+  <!-- Wheel -->
+  <div id="wheel-wrap">
+    <svg id="wheel-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- dynamically built -->
+    </svg>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   BRAYN – WHEEL OF FORTUNE   (single-file, no external deps)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 0. INLINE SVG FALLBACK ICONS (for onerror on <img>) ── */
+const ICONS = {
+  flower:`<svg width="26" height="26" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="ff"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#ff)">
+      <ellipse cx="30" cy="13" rx="9" ry="14" fill="#FF1296" opacity=".95"/>
+      <ellipse cx="30" cy="47" rx="9" ry="14" fill="#FF1296" opacity=".95"/>
+      <ellipse cx="13" cy="30" rx="14" ry="9" fill="#FF1296" opacity=".95"/>
+      <ellipse cx="47" cy="30" rx="14" ry="9" fill="#FF1296" opacity=".95"/>
+      <ellipse cx="18" cy="18" rx="9" ry="14" transform="rotate(45 18 18)" fill="#FF1296" opacity=".85"/>
+      <ellipse cx="42" cy="42" rx="9" ry="14" transform="rotate(45 42 42)" fill="#FF1296" opacity=".85"/>
+      <ellipse cx="42" cy="18" rx="9" ry="14" transform="rotate(-45 42 18)" fill="#FF1296" opacity=".85"/>
+      <ellipse cx="18" cy="42" rx="9" ry="14" transform="rotate(-45 18 42)" fill="#FF1296" opacity=".85"/>
+      <circle cx="30" cy="30" r="9" fill="#FFD700"/>
+    </g>
+  </svg>`,
+
+  ring:`<svg width="26" height="26" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="rf"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#rf)">
+      <circle cx="30" cy="30" r="24" stroke="#D5F20E" stroke-width="9" fill="none" opacity=".95"/>
+      <circle cx="30" cy="30" r="24" stroke="#ffffff" stroke-width="2" fill="none" opacity=".4"/>
+    </g>
+  </svg>`,
+
+  lightning:`<svg width="26" height="26" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="lf"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#lf)">
+      <polygon points="36,5 20,32 30,32 24,55 42,25 30,25" fill="#00FFFF" opacity=".95"/>
+      <polygon points="36,5 20,32 30,32 24,55 42,25 30,25" fill="none" stroke="#ffffff" stroke-width="1.5" opacity=".5"/>
+    </g>
+  </svg>`
+};
+
+/* ── 1. DESIGN TOKENS ──────────────────────────────────── */
+const COLORS = {
+  slotDark:'#1B1FB9', slotLight:'#1557FF',
+  rimPink:'#E3007B', uiPink:'#FF1296',
+  uiCyan:'#00FFFF', uiLime:'#D5F20E',
+  text:'#FFFFFF'
+};
+
+/* ── 2. SEGMENT CONFIG ─────────────────────────────────── */
+const SEGMENTS = [
+  {resource:'ring',     value:20,  color:'#D5F20E'},
+  {resource:'flower',   value:5,   color:'#FF1296'},
+  {resource:'ring',     value:300, color:'#D5F20E'},
+  {resource:'lightning',value:35,  color:'#00FFFF'},
+  {resource:'flower',   value:5,   color:'#FF1296'},
+  {resource:'ring',     value:2,   color:'#D5F20E'},
+  {resource:'lightning',value:2,   color:'#00FFFF'},
+  {resource:'flower',   value:234, color:'#FF1296'},
+];
+const WEIGHTS = SEGMENTS.map(()=>1);
+const SEG_N   = SEGMENTS.length;  // 8
+const SEG_DEG = 360 / SEG_N;      // 45
+
+/* ── 3. RESOURCE STORE + LOCALSTORAGE ───────────────────── */
+const DEFAULTS = {flower:300, ring:1, lightning:20};
+let store = {};
+(()=>{
+  try{
+    const saved = JSON.parse(localStorage.getItem('brayn_wof_store'));
+    if(saved && typeof saved==='object'){
+      store = {...DEFAULTS,...saved};
+    } else {
+      store = {...DEFAULTS};
+    }
+  }catch{
+    // Corrupted data – clear and reset to defaults
+    try{ localStorage.removeItem('brayn_wof_store'); }catch{}
+    store = {...DEFAULTS};
+  }
+  Object.keys(DEFAULTS).forEach(k=>{
+    const el=document.getElementById('count-'+k);
+    if(el) el.textContent=store[k];
+  });
+})();
+function persistStore(){try{localStorage.setItem('brayn_wof_store',JSON.stringify(store))}catch{}}
+
+/* ── 4. EASING ─────────────────────────────────────────── */
+function easeOutQuint(t){return 1-Math.pow(1-t,5)}
+function easeInCubic(t){return t*t*t}
+/* blend: accelerate for first 8% then ease-out the rest */
+function spinEase(t){
+  if(t<0.08) return easeInCubic(t/0.08)*0.08;
+  const tt=(t-0.08)/0.92;
+  return 0.08 + easeOutQuint(tt)*0.92;
+}
+
+/* ── 5. HELPERS ─────────────────────────────────────────── */
+function normalizeAngle(a){return((a%360)+360)%360}
+
+/* ── 5. SVG WHEEL BUILD ────────────────────────────────── */
+const CX=250, CY=250;         // SVG center
+const WHEEL_R  = 208;         // segment radius
+const RIM_W    = 26;          // rim ring width
+const RIM_INNER= WHEEL_R+4;
+const RIM_OUTER= WHEEL_R+RIM_W+4;
+const BULB_R   = WHEEL_R+RIM_W*0.5+4; // bulb center radius
+const BTN_R    = 64;          // GO button radius
+const N_BULBS  = 24;
+const CONTENT_R= 148;         // icon+text radial distance
+
+function deg2rad(d){return d*Math.PI/180}
+function polar(cx,cy,r,deg){
+  const a=deg2rad(deg-90); // -90: 0deg → top
+  return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+}
+function wedgePath(cx,cy,r,a1,a2){
+  const [x1,y1]=polar(cx,cy,r,a1);
+  const [x2,y2]=polar(cx,cy,r,a2);
+  const large=a2-a1>180?1:0;
+  return `M${cx},${cy} L${x1},${y1} A${r},${r},0,${large},1,${x2},${y2} Z`;
+}
+
+// SVG icon symbols (used inside the wheel)
+const ICON_SYMBOLS = `
+<symbol id="sym-flower" viewBox="0 0 60 60">
+  <ellipse cx="30" cy="12" rx="8.5" ry="13" fill="#FF1296"/>
+  <ellipse cx="30" cy="48" rx="8.5" ry="13" fill="#FF1296"/>
+  <ellipse cx="12" cy="30" rx="13" ry="8.5" fill="#FF1296"/>
+  <ellipse cx="48" cy="30" rx="13" ry="8.5" fill="#FF1296"/>
+  <ellipse cx="17.5" cy="17.5" rx="8.5" ry="13" transform="rotate(45 17.5 17.5)" fill="#FF1296" opacity=".85"/>
+  <ellipse cx="42.5" cy="42.5" rx="8.5" ry="13" transform="rotate(45 42.5 42.5)" fill="#FF1296" opacity=".85"/>
+  <ellipse cx="42.5" cy="17.5" rx="8.5" ry="13" transform="rotate(-45 42.5 17.5)" fill="#FF1296" opacity=".85"/>
+  <ellipse cx="17.5" cy="42.5" rx="8.5" ry="13" transform="rotate(-45 17.5 42.5)" fill="#FF1296" opacity=".85"/>
+  <circle cx="30" cy="30" r="9" fill="#FFD700"/>
+</symbol>
+<symbol id="sym-ring" viewBox="0 0 60 60">
+  <circle cx="30" cy="30" r="23" stroke="#D5F20E" stroke-width="10" fill="none"/>
+  <circle cx="30" cy="30" r="23" stroke="rgba(255,255,255,.35)" stroke-width="2.5" fill="none"/>
+</symbol>
+<symbol id="sym-lightning" viewBox="0 0 60 60">
+  <polygon points="37,5 19,32 31,32 23,55 43,26 30,26" fill="#00FFFF"/>
+  <polygon points="37,5 19,32 31,32 23,55 43,26 30,26" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+</symbol>`;
+
+function buildSVG(){
+  const svg = document.getElementById('wheel-svg');
+
+  svg.innerHTML=`<defs>
+    ${ICON_SYMBOLS}
+    <!-- Glow filters -->
+    <filter id="f-glow-lime" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="f-glow-pink" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="f-glow-btn" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="f-text-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="f-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,.5)"/>
+    </filter>
+    <!-- rim gradient -->
+    <radialGradient id="rim-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF3AB8"/>
+      <stop offset="100%" stop-color="#A50059"/>
+    </radialGradient>
+    <!-- button gradient -->
+    <radialGradient id="btn-grad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#E8FF4A"/>
+      <stop offset="55%" stop-color="#B8D400"/>
+      <stop offset="100%" stop-color="#7A8E00"/>
+    </radialGradient>
+    <!-- glass highlight on button -->
+    <linearGradient id="btn-gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,.55)"/>
+      <stop offset="60%" stop-color="rgba(255,255,255,.05)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.1)"/>
+    </linearGradient>
+    <!-- segment gradients -->
+    <radialGradient id="seg-grad-dark" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#2834E0"/>
+      <stop offset="100%" stop-color="#131890"/>
+    </radialGradient>
+    <radialGradient id="seg-grad-light" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#3070FF"/>
+      <stop offset="100%" stop-color="#0F45C8"/>
+    </radialGradient>
+  </defs>
+
+  <!-- outer glow ring -->
+  <circle cx="${CX}" cy="${CY}" r="${RIM_OUTER+18}" fill="none"
+    stroke="rgba(227,0,123,.25)" stroke-width="28" filter="url(#f-glow-pink)"/>
+
+  <!-- rim pink ring -->
+  <circle cx="${CX}" cy="${CY}" r="${(RIM_INNER+RIM_OUTER)/2}"
+    fill="none" stroke="url(#rim-grad)"
+    stroke-width="${RIM_OUTER-RIM_INNER}"
+    filter="url(#f-glow-pink)"/>
+  <!-- rim highlight -->
+  <circle cx="${CX}" cy="${CY}" r="${(RIM_INNER+RIM_OUTER)/2}"
+    fill="none" stroke="rgba(255,255,255,.18)"
+    stroke-width="1.5"/>
+
+  <!-- WHEEL GROUP (rotated by JS) -->
+  <g id="wheel-group" transform="rotate(0,${CX},${CY})">
+    ${buildSegments()}
+  </g>
+
+  <!-- inner separator circle -->
+  <circle cx="${CX}" cy="${CY}" r="${BTN_R+16}"
+    fill="#08103a" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+
+  <!-- BULB GROUP (fixed, animated by JS) -->
+  <g id="bulb-group">${buildBulbs()}</g>
+
+  <!-- POINTER (fixed) -->
+  ${buildPointer()}
+
+  <!-- GO BUTTON (fixed) -->
+  <g id="go-btn">
+    <!-- shadow -->
+    <circle cx="${CX}" cy="${CY+3}" r="${BTN_R}" fill="rgba(0,0,0,.45)"/>
+    <!-- main circle -->
+    <circle id="go-circle" cx="${CX}" cy="${CY}" r="${BTN_R}"
+      fill="url(#btn-grad)" filter="url(#f-glow-btn)"/>
+    <!-- inner shadow -->
+    <circle cx="${CX}" cy="${CY}" r="${BTN_R}"
+      fill="none" stroke="rgba(0,0,0,.25)" stroke-width="6"
+      stroke-dasharray="${2*Math.PI*BTN_R}"
+      stroke-dashoffset="${Math.PI*BTN_R}"/>
+    <!-- gloss -->
+    <ellipse cx="${CX}" cy="${CY-BTN_R*0.28}" rx="${BTN_R*0.65}" ry="${BTN_R*0.3}"
+      fill="url(#btn-gloss)" opacity=".7"/>
+    <!-- GO label -->
+    <text x="${CX}" y="${CY+9}"
+      text-anchor="middle" dominant-baseline="middle"
+      font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif"
+      font-size="32" font-weight="900" fill="#000" letter-spacing="2">GO</text>
+    <!-- invisible hit area -->
+    <circle cx="${CX}" cy="${CY}" r="${BTN_R+8}" fill="transparent"/>
+  </g>`;
+}
+
+function buildSegments(){
+  let html='';
+  for(let i=0;i<SEG_N;i++){
+    const a1=i*SEG_DEG, a2=(i+1)*SEG_DEG;
+    const mid=a1+SEG_DEG/2;
+    const fill=i%2===0 ? 'url(#seg-grad-dark)' : 'url(#seg-grad-light)';
+    const seg=SEGMENTS[i];
+
+    // position of content center
+    const [cx2,cy2]=polar(CX,CY,CONTENT_R,mid);
+    const rot=mid; // rotate content to face outward
+
+    // icon symbol
+    const sym = `sym-${seg.resource}`;
+    const glow = seg.resource==='flower' ? 'f-text-glow'
+               : seg.resource==='ring'   ? 'f-text-glow' : 'f-text-glow';
+
+    html+=`
+    <!-- segment ${i}: ${seg.resource} ${seg.value} -->
+    <path d="${wedgePath(CX,CY,WHEEL_R,a1,a2)}"
+      fill="${fill}"
+      stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+    <!-- divider line -->
+    <line x1="${CX}" y1="${CY}"
+      x2="${polar(CX,CY,WHEEL_R,a1)[0]}" y2="${polar(CX,CY,WHEEL_R,a1)[1]}"
+      stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
+    <!-- content group -->
+    <g transform="translate(${cx2},${cy2}) rotate(${rot})">
+      <!-- icon -->
+      <use href="#${sym}" x="-22" y="-40" width="44" height="44"
+        filter="url(#f-text-glow)"/>
+      <!-- value label -->
+      <text x="0" y="16"
+        text-anchor="middle" dominant-baseline="auto"
+        font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif"
+        font-size="20" font-weight="900" fill="${seg.color}"
+        filter="url(#f-text-glow)">${seg.value}</text>
+    </g>`;
+  }
+  return html;
+}
+
+function buildBulbs(){
+  let html='';
+  for(let i=0;i<N_BULBS;i++){
+    const a=i*(360/N_BULBS);
+    const [bx,by]=polar(CX,CY,BULB_R,a);
+    html+=`<circle class="bulb" id="bulb-${i}"
+      cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="5.5"
+      fill="${i%2===0?'#FFB0E0':'rgba(255,255,255,.15)'}"/>`;
+  }
+  return html;
+}
+
+function buildPointer(){
+  // lime triangle pointing downward, tip just inside wheel outer rim
+  const tipY = CY - RIM_OUTER - 2;
+  const pw=14, ph=22;
+  return `<g id="pointer" filter="url(#f-glow-lime)">
+    <polygon points="${CX},${tipY+ph} ${CX-pw/2},${tipY} ${CX+pw/2},${tipY}"
+      fill="${COLORS.uiLime}"/>
+    <polygon points="${CX},${tipY+ph} ${CX-pw/2},${tipY} ${CX+pw/2},${tipY}"
+      fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+  </g>`;
+}
+
+/* ── 6. BULB ANIMATION CONTROLLER ──────────────────────── */
+let bulbTimer=null;
+let bulbPhase=0;
+
+function getBulbEls(){
+  return Array.from(document.querySelectorAll('.bulb'));
+}
+
+function setBulbState(state){
+  clearInterval(bulbTimer);
+  const bulbs=getBulbEls();
+  if(!bulbs.length) return;
+
+  const interval = state==='idle'?260 : state==='spinning'?110 : 60;
+  let frame=0;
+
+  function tick(){
+    frame++;
+    bulbs.forEach((b,i)=>{
+      let on;
+      if(state==='idle'){
+        on=(i%2===0)===(frame%2===0);
+      } else if(state==='spinning'){
+        // chase pattern
+        on=((i - frame*2)&3)===0;
+      } else { // landing burst
+        on=frame%2===0; // all toggle together
+      }
+      if(on){
+        b.setAttribute('fill', i%3===0?'#FFFFFF':'#FFB0E0');
+        b.setAttribute('r','6.2');
+        b.setAttribute('opacity','1');
+      } else {
+        b.setAttribute('fill','rgba(255,255,255,.12)');
+        b.setAttribute('r','5.5');
+        b.setAttribute('opacity','.55');
+      }
+    });
+  }
+  tick();
+  bulbTimer=setInterval(tick, interval);
+}
+
+/* ── 7. SPIN STATE MACHINE ──────────────────────────────── */
+let spinState='idle'; // idle | spinning | win_celebration
+let wheelAngle=0;     // total accumulated rotation (degrees)
+let spinRaf=null;
+
+// spin parameters set each spin
+let spinStart=0, spinDuration=0, spinStartAngle=0, spinEndAngle=0, winSegIdx=0;
+
+function weightedRandom(){
+  const total=WEIGHTS.reduce((a,b)=>a+b,0);
+  let r=Math.random()*total;
+  for(let i=0;i<WEIGHTS.length;i++){
+    r-=WEIGHTS[i]; if(r<=0) return i;
+  }
+  return WEIGHTS.length-1;
+}
+
+function segCenterAngle(idx){
+  // angle (from top, clockwise) of segment center in original (unrotated) wheel
+  return idx*SEG_DEG + SEG_DEG/2;
+}
+
+function targetAngleForSeg(segIdx, currentAngle){
+  // We want: wheelAngle mod 360 = (360 - segCenter) mod 360
+  // so the segment center aligns with the top pointer
+  const segCenter = segCenterAngle(segIdx);
+  const desired   = normalizeAngle(360 - segCenter);
+  const curNorm   = normalizeAngle(currentAngle);
+
+  let diff = normalizeAngle(desired - curNorm);
+  if(diff < 30) diff += 360; // ensure we always spin meaningfully
+
+  // 5–8 full rotations (Math.floor(Math.random()*4) = 0–3, +5 = 5–8), each 360°
+  const extraRotations = (Math.floor(Math.random()*4)+5)*360;
+  return currentAngle + extraRotations + diff;
+}
+
+function startSpin(){
+  if(spinState!=='idle') return;
+  spinState='spinning';
+
+  winSegIdx = weightedRandom();
+  spinStartAngle = wheelAngle;
+  spinEndAngle   = targetAngleForSeg(winSegIdx, wheelAngle);
+  spinDuration   = 4200 + Math.random()*1600; // 4.2s – 5.8s
+  spinStart      = performance.now();
+
+  // UI updates
+  document.getElementById('go-btn').classList.add('disabled');
+  document.getElementById('wheel-wrap').classList.add('pulse-start');
+  setTimeout(()=>document.getElementById('wheel-wrap').classList.remove('pulse-start'),400);
+
+  setBulbState('spinning');
+  playSound('spin_start');
+
+  // last tick angle for tick sound
+  let lastTick = Math.floor(wheelAngle / SEG_DEG);
+
+  function frame(now){
+    const elapsed = now - spinStart;
+    const t = Math.min(1, elapsed / spinDuration);
+    const eased = spinEase(t);
+
+    wheelAngle = spinStartAngle + (spinEndAngle - spinStartAngle) * eased;
+    applyWheelRotation(wheelAngle);
+
+    // tick sound on each wedge crossing
+    const currentTick = Math.floor(normalizeAngle(wheelAngle) / SEG_DEG);
+    if(currentTick !== lastTick){
+      lastTick = currentTick;
+      playSound('tick');
+    }
+
+    if(t < 0.85){
+      spinRaf = requestAnimationFrame(frame);
+    } else {
+      // settling phase: approach final angle
+      if(t < 1){
+        spinRaf = requestAnimationFrame(frame);
+      } else {
+        // final snap
+        wheelAngle = spinEndAngle;
+        applyWheelRotation(wheelAngle);
+        onWinLand();
+      }
+    }
+  }
+  spinRaf = requestAnimationFrame(frame);
+}
+
+function applyWheelRotation(angle){
+  const g = document.getElementById('wheel-group');
+  if(g) g.setAttribute('transform',`rotate(${angle},${CX},${CY})`);
+}
+
+function onWinLand(){
+  setBulbState('landing');
+  setTimeout(()=> setBulbState('idle'), 700);
+
+  const seg = SEGMENTS[winSegIdx];
+  playSound('win_impact');
+
+  // micro-overshoot visual: tiny tween of 1-2deg then snap back
+  let over=0, done=false;
+  const overshoot=1.5;
+  const overStart=performance.now();
+  function overFrame(now){
+    const t=Math.min(1,(now-overStart)/180);
+    if(t<0.5){ over=overshoot*easeOutQuint(t*2); }
+    else      { over=overshoot*(1-easeOutQuint((t-0.5)*2)); }
+    applyWheelRotation(spinEndAngle+over);
+    if(t<1) requestAnimationFrame(overFrame);
+    else applyWheelRotation(spinEndAngle);
+  }
+  requestAnimationFrame(overFrame);
+
+  // count-up + celebration
+  setTimeout(()=>{
+    store[seg.resource] += seg.value;
+    persistStore();
+    animateCount(seg.resource, store[seg.resource]-seg.value, store[seg.resource]);
+    triggerWinGlow(seg.resource);
+    launchFireworks(seg.resource, winSegIdx);
+    playSound('resource_add');
+
+    setTimeout(()=>{
+      spinState='idle';
+      document.getElementById('go-btn').classList.remove('disabled');
+    }, 1800);
+  }, 350);
+}
+
+/* ── 8. HEADER COUNT-UP ANIMATION ──────────────────────── */
+function animateCount(resource, from, to){
+  const el=document.getElementById('count-'+resource);
+  if(!el) return;
+  const duration = 700 + Math.random()*400; // 700-1100ms
+  const start=performance.now();
+  function tick(now){
+    const t=Math.min(1,(now-start)/duration);
+    const eased=easeOutQuint(t);
+    el.textContent=Math.round(from+(to-from)*eased);
+    if(t<1) requestAnimationFrame(tick);
+    else el.textContent=to;
+  }
+  requestAnimationFrame(tick);
+
+  // icon pulse
+  const pill=document.getElementById('pill-'+resource);
+  if(pill){ pill.classList.add('pop'); setTimeout(()=>pill.classList.remove('pop'),500); }
+}
+
+function triggerWinGlow(resource){
+  ['flower','ring','lightning'].forEach(r=>{
+    document.getElementById('pill-'+r)?.classList.remove('win-glow-'+r);
+  });
+  const pill=document.getElementById('pill-'+resource);
+  if(pill){
+    pill.classList.add('win-glow-'+resource);
+    setTimeout(()=>pill.classList.remove('win-glow-'+resource), 1800);
+  }
+}
+
+/* ── 9. PARTICLE / FIREWORKS SYSTEM ─────────────────────── */
+const canvas=document.getElementById('fx-canvas');
+const ctx=canvas.getContext('2d');
+let particles=[];
+let fxRaf=null;
+
+function resizeCanvas(){
+  canvas.width=canvas.offsetWidth;
+  canvas.height=canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+const COLORS_BY_RES={
+  flower:['#FF1296','#FF70CC','#FF4DB8','#FFB0E0','#FF00AA'],
+  ring:  ['#D5F20E','#EEFF5A','#C2DC00','#F0FF70','#A8C800'],
+  lightning:['#00FFFF','#80FFFF','#00E5E5','#AAFFFF','#00CCCC'],
+};
+
+function launchFireworks(resource, segIdx){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const cols=COLORS_BY_RES[resource];
+  const rect=document.getElementById('wheel-wrap').getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;
+  const scaleY=canvas.height/rect.height;
+
+  // wheel center in canvas coords
+  const appEl=document.getElementById('app');
+  const appRect=appEl.getBoundingClientRect();
+  const wheelRect=rect;
+  const wcx=(wheelRect.left+wheelRect.right)/2 - appRect.left;
+  const wcy=(wheelRect.top+wheelRect.bottom)/2  - appRect.top;
+
+  // scale to canvas
+  const canvasCX=wcx*(canvas.width/appEl.offsetWidth);
+  const canvasCY=wcy*(canvas.height/appEl.offsetHeight);
+
+  // winning segment direction angle (pointing outward)
+  const segMidDeg = winSegIdx*SEG_DEG + SEG_DEG/2 + wheelAngle; // world angle
+  const segMidRad = (segMidDeg-90)*Math.PI/180;
+
+  // spawn center flash
+  particles.push({
+    type:'flash',
+    x:canvasCX, y:canvasCY,
+    r:0, maxR:120, color:cols[0],
+    life:1, decay:0.045,
+  });
+
+  // spawn burst particles from wheel center
+  for(let i=0;i<55;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 3+Math.random()*9;
+    particles.push({
+      type:'spark',
+      x:canvasCX, y:canvasCY,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed - 1.5,
+      r: 3+Math.random()*4,
+      color:cols[i%cols.length],
+      life:1, decay:0.018+Math.random()*0.015,
+      gravity:0.18,
+    });
+  }
+
+  // spawn firework shells around wheel perimeter
+  const wheelDisplayR = (rect.width/2)*(canvas.width/appEl.offsetWidth);
+
+  for(let b=0;b<6;b++){
+    const ba = b*(Math.PI*2/6) + segMidRad + Math.random()*0.5;
+    const dist = wheelDisplayR*0.85 + Math.random()*wheelDisplayR*0.3;
+    const fx = canvasCX + Math.cos(ba)*dist;
+    const fy = canvasCY + Math.sin(ba)*dist;
+    // explode each shell after slight delay
+    setTimeout(()=>spawnShell(fx, fy, cols), b*120+200);
+  }
+
+  startFxLoop();
+}
+
+function spawnShell(ox, oy, cols){
+  for(let i=0;i<22;i++){
+    const a=Math.random()*Math.PI*2;
+    const s=2+Math.random()*5;
+    particles.push({
+      type:'spark',
+      x:ox, y:oy,
+      vx:Math.cos(a)*s,
+      vy:Math.sin(a)*s,
+      r: 2.5+Math.random()*3,
+      color:cols[i%cols.length],
+      life:1, decay:0.025+Math.random()*0.02,
+      gravity:0.12,
+    });
+  }
+  // trailing stars
+  for(let i=0;i<8;i++){
+    const a=Math.random()*Math.PI*2;
+    particles.push({
+      type:'star',
+      x:ox, y:oy,
+      vx:Math.cos(a)*1.5,
+      vy:Math.sin(a)*1.5-0.5,
+      r:1.5+Math.random()*2,
+      color:'#FFFFFF',
+      life:1, decay:0.03+Math.random()*0.02,
+      gravity:0.06,
+    });
+  }
+}
+
+function startFxLoop(){
+  if(fxRaf) return;
+  function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{
+      if(p.type==='flash'){
+        p.r+=p.maxR*p.decay*2.5;
+        p.life-=p.decay;
+        ctx.save();
+        ctx.globalAlpha=p.life*0.55;
+        const grad=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+        grad.addColorStop(0,p.color);
+        grad.addColorStop(1,'transparent');
+        ctx.fillStyle=grad;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      } else {
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.gravity) p.vy+=p.gravity;
+        p.vx*=0.98; p.vy*=0.98;
+        p.life-=p.decay;
+        ctx.save();
+        ctx.globalAlpha=Math.max(0,p.life*0.92);
+        ctx.shadowBlur=p.type==='star'?4:8;
+        ctx.shadowColor=p.color;
+        ctx.fillStyle=p.color;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r*Math.max(0.2,p.life),0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    if(particles.length>0){
+      fxRaf=requestAnimationFrame(loop);
+    } else {
+      fxRaf=null;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+  fxRaf=requestAnimationFrame(loop);
+}
+
+/* ── 10. WEB AUDIO SOUND HOOKS ──────────────────────────── */
+let audioCtx=null;
+function ensureAudio(){
+  if(!audioCtx) try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch{}
+  return audioCtx;
+}
+
+function playSound(event){
+  const ac=ensureAudio(); if(!ac) return;
+  try{
+    const osc=ac.createOscillator();
+    const gain=ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    const now=ac.currentTime;
+    if(event==='tick'){
+      osc.type='sine'; osc.frequency.value=820;
+      gain.gain.setValueAtTime(0.08,now);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+0.07);
+      osc.start(now); osc.stop(now+0.07);
+    } else if(event==='spin_start'){
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(200,now);
+      osc.frequency.exponentialRampToValueAtTime(600,now+0.15);
+      gain.gain.setValueAtTime(0.12,now);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+0.2);
+      osc.start(now); osc.stop(now+0.2);
+    } else if(event==='win_impact'){
+      osc.type='triangle'; osc.frequency.setValueAtTime(440,now);
+      osc.frequency.exponentialRampToValueAtTime(880,now+0.08);
+      gain.gain.setValueAtTime(0.22,now);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+0.55);
+      osc.start(now); osc.stop(now+0.55);
+      // second tone
+      const o2=ac.createOscillator(), g2=ac.createGain();
+      o2.connect(g2); g2.connect(ac.destination);
+      o2.type='sine'; o2.frequency.value=1320;
+      g2.gain.setValueAtTime(0,now+0.04);
+      g2.gain.linearRampToValueAtTime(0.18,now+0.12);
+      g2.gain.exponentialRampToValueAtTime(0.001,now+0.7);
+      o2.start(now+0.04); o2.stop(now+0.7);
+    } else if(event==='resource_add'){
+      osc.type='sine'; osc.frequency.value=1046;
+      gain.gain.setValueAtTime(0.1,now);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+      osc.start(now); osc.stop(now+0.25);
+    }
+  }catch{}
+}
+
+/* ── 11. EVENT LISTENERS ───────────────────────────────── */
+function initListeners(){
+  const btn=document.getElementById('go-btn');
+  if(!btn) return;
+
+  // Visual press feedback (works with both CSS and SVG)
+  function setPressed(on){
+    const c=document.getElementById('go-circle');
+    if(c){
+      c.style.transformBox='fill-box';
+      c.style.transformOrigin='center';
+      c.style.transform=on?'scale(0.93)':'';
+      c.style.filter=on?'brightness(0.85)':'';
+    }
+  }
+
+  btn.addEventListener('mousedown', ()=>setPressed(true));
+  btn.addEventListener('mouseup',   ()=>setPressed(false));
+  btn.addEventListener('mouseleave',()=>setPressed(false));
+  btn.addEventListener('touchstart',()=>setPressed(true),  {passive:true});
+  btn.addEventListener('touchend',  ()=>setPressed(false), {passive:true});
+
+  function onPress(e){
+    e.preventDefault();
+    if(spinState!=='idle') return;
+    ensureAudio();
+    startSpin();
+  }
+  btn.addEventListener('click', onPress);
+  btn.addEventListener('touchstart', onPress, {passive:false});
+}
+
+/* ── 12. INIT ───────────────────────────────────────────── */
+function init(){
+  buildSVG();
+  applyWheelRotation(wheelAngle);
+  setBulbState('idle');
+  initListeners();
+
+  // Initialize displayed counts from store
+  ['flower','ring','lightning'].forEach(r=>{
+    const el=document.getElementById('count-'+r);
+    if(el) el.textContent=store[r];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
