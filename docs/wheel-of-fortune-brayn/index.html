@@ -293,7 +293,7 @@
     }
 
     .slot img {
-      width: clamp(28px, 42%, 48px);
+      width: clamp(28px, 6vw, 48px);
       height: auto;
       aspect-ratio: 1 / 1;
       max-width: 100%;
@@ -302,7 +302,6 @@
       filter: drop-shadow(0 0 8px rgba(255,255,255,.25));
       image-rendering: -webkit-optimize-contrast;
       transform: translateZ(0);
-      backface-visibility: hidden;
     }
 
     .slot .value {
@@ -429,7 +428,7 @@
       .pill img { width: 22px; height: 22px; flex-basis: 22px; }
       .pill .count { font-size: 16px; }
       .slot { width: clamp(62px, 17vw, 88px); gap: 4px; }
-      .slot img { width: clamp(26px, 44%, 38px); }
+      .slot img { width: clamp(26px, 5.5vw, 38px); }
       .slot .value { font-size: clamp(15px, 4vw, 20px); }
       .pointer {
         border-left-width: 16px;
@@ -510,6 +509,38 @@
       }
     };
 
+    const SLOT_LAYOUT = {
+      fallbackDepthRatio: 0.18,
+      minSafeInset: 18,
+      safeInsetRatio: 0.08,
+      minRadiusRatio: 0.285
+    };
+
+    const FIREWORKS_CONFIG = {
+      minFadeRange: 0.001,
+      trailAlphaMultiplier: 0.28,
+      minTrailWidth: 0.5,
+      trailWidthMultiplier: 0.52,
+      twinkleFrequency: 0.45,
+      minParticleSize: 0.65,
+      layerVelocityOffset: 0.15,
+      cometMinUpwardBias: 1,
+      cometUpwardBiasRange: 1.4
+    };
+
+    const FIREWORK_PALETTE = {
+      subtleSpread: 18,
+      vividSpread: 30,
+      whiteMix: 0.3,
+      warmMix: 0.22
+    };
+
+    const FIREWORK_LAYERS = [
+      { name: "outer", count: 30, speedMin: 3.8, speedMax: 6.7, jitter: 0.12, sizeMin: 2.1, sizeMax: 4.8, gravityMin: 0.048, gravityMax: 0.082, lifeMin: 54, lifeMax: 84, dragMin: 0.964, dragMax: 0.976, trailMax: 4, glow: 20, fadeStart: 0.35, shrinkMin: 0.976, shrinkMax: 0.985, twinkle: 0.2 },
+      { name: "mid", count: 18, speedMin: 2.2, speedMax: 4.3, jitter: 0.22, sizeMin: 1.6, sizeMax: 3.2, gravityMin: 0.04, gravityMax: 0.07, lifeMin: 46, lifeMax: 72, dragMin: 0.972, dragMax: 0.984, trailMax: 3, glow: 15, fadeStart: 0.42, shrinkMin: 0.982, shrinkMax: 0.989, twinkle: 0.14 },
+      { name: "inner", count: 12, speedMin: 0.9, speedMax: 2.1, jitter: 0.34, sizeMin: 1.2, sizeMax: 2.4, gravityMin: 0.028, gravityMax: 0.052, lifeMin: 68, lifeMax: 104, dragMin: 0.984, dragMax: 0.992, trailMax: 2, glow: 10, fadeStart: 0.56, shrinkMin: 0.988, shrinkMax: 0.994, twinkle: 0.08 }
+    ];
+
     const wheel = document.getElementById("wheel");
     const bulbs = document.getElementById("bulbs");
     const spinBtn = document.getElementById("spinBtn");
@@ -537,9 +568,9 @@
       const sampleSlot = wheel.querySelector(".slot");
       if (!size || !sampleSlot) return;
 
-      const slotDepth = sampleSlot.getBoundingClientRect().height || size * 0.18;
-      const safeInset = Math.max(18, size * 0.08);
-      const radius = Math.max(size * 0.285, size / 2 - safeInset - slotDepth / 2);
+      const slotDepth = sampleSlot.getBoundingClientRect().height || size * SLOT_LAYOUT.fallbackDepthRatio;
+      const safeInset = Math.max(SLOT_LAYOUT.minSafeInset, size * SLOT_LAYOUT.safeInsetRatio);
+      const radius = Math.max(SLOT_LAYOUT.minRadiusRatio * size, size / 2 - safeInset - slotDepth / 2);
       wheel.querySelectorAll(".slot").forEach(slot => {
         slot.style.setProperty("--radius", radius + "px");
       });
@@ -721,11 +752,11 @@
     }
 
     function mixRgb(a, b, amount = 0.5) {
-      const mix = (x, y) => Math.round(x + (y - x) * amount);
+      const interpolateChannel = (x, y) => Math.round(x + (y - x) * amount);
       return {
-        r: mix(a.r, b.r),
-        g: mix(a.g, b.g),
-        b: mix(a.b, b.b)
+        r: interpolateChannel(a.r, b.r),
+        g: interpolateChannel(a.g, b.g),
+        b: interpolateChannel(a.b, b.b)
       };
     }
 
@@ -733,26 +764,35 @@
       return `rgb(${r}, ${g}, ${b})`;
     }
 
-    function pick(items) {
+    function pickRandomItem(items) {
       return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function toRgba(color, alpha) {
+      if (color.startsWith("#")) {
+        const rgb = hexToRgb(color);
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+      }
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (!match) return `rgba(255, 255, 255, ${alpha})`;
+      return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
     }
 
     function createFireworkPalette(base) {
       const rgb = hexToRgb(base);
       return [
-        varyColor(base, 18),
-        varyColor(base, 30),
-        rgbToCss(mixRgb(rgb, { r: 255, g: 255, b: 255 }, 0.3)),
-        rgbToCss(mixRgb(rgb, { r: 255, g: 216, b: 124 }, 0.22))
+        varyColor(base, FIREWORK_PALETTE.subtleSpread),
+        varyColor(base, FIREWORK_PALETTE.vividSpread),
+        rgbToCss(mixRgb(rgb, { r: 255, g: 255, b: 255 }, FIREWORK_PALETTE.whiteMix)),
+        rgbToCss(mixRgb(rgb, { r: 255, g: 216, b: 124 }, FIREWORK_PALETTE.warmMix))
       ];
     }
 
     function addParticle(config) {
-      const life = config.life;
       particles.push({
         ...config,
-        life,
-        maxLife: life,
+        maxLife: config.life,
+        fadeRange: Math.max(FIREWORKS_CONFIG.minFadeRange, 1 - (config.fadeStart ?? 0.42)),
         trail: [],
         trailMax: config.trailMax ?? 0,
         glow: config.glow ?? 14,
@@ -778,13 +818,7 @@
         const by = cy + Math.sin(angleOffset) * orbit;
         const twist = Math.random() * Math.PI * 2;
 
-        const layers = [
-          { count: 30, speedMin: 3.8, speedMax: 6.7, jitter: 0.12, sizeMin: 2.1, sizeMax: 4.8, gravityMin: 0.048, gravityMax: 0.082, lifeMin: 54, lifeMax: 84, dragMin: 0.964, dragMax: 0.976, trailMax: 4, glow: 20, fadeStart: 0.35, shrinkMin: 0.976, shrinkMax: 0.985, twinkle: 0.2 },
-          { count: 18, speedMin: 2.2, speedMax: 4.3, jitter: 0.22, sizeMin: 1.6, sizeMax: 3.2, gravityMin: 0.04, gravityMax: 0.07, lifeMin: 46, lifeMax: 72, dragMin: 0.972, dragMax: 0.984, trailMax: 3, glow: 15, fadeStart: 0.42, shrinkMin: 0.982, shrinkMax: 0.989, twinkle: 0.14 },
-          { count: 12, speedMin: 0.9, speedMax: 2.1, jitter: 0.34, sizeMin: 1.2, sizeMax: 2.4, gravityMin: 0.028, gravityMax: 0.052, lifeMin: 68, lifeMax: 104, dragMin: 0.984, dragMax: 0.992, trailMax: 2, glow: 10, fadeStart: 0.56, shrinkMin: 0.988, shrinkMax: 0.994, twinkle: 0.08 }
-        ];
-
-        layers.forEach((layer, layerIndex) => {
+        FIREWORK_LAYERS.forEach((layer, layerIndex) => {
           for (let i = 0; i < layer.count; i++) {
             const a = twist + (Math.PI * 2 * i) / layer.count + (Math.random() - 0.5) * layer.jitter;
             const speed = layer.speedMin + Math.random() * (layer.speedMax - layer.speedMin);
@@ -792,11 +826,11 @@
               x: bx,
               y: by,
               vx: Math.cos(a) * speed,
-              vy: Math.sin(a) * speed - layerIndex * 0.15,
+              vy: Math.sin(a) * speed - layerIndex * FIREWORKS_CONFIG.layerVelocityOffset,
               g: layer.gravityMin + Math.random() * (layer.gravityMax - layer.gravityMin),
               life: layer.lifeMin + Math.random() * (layer.lifeMax - layer.lifeMin),
               size: layer.sizeMin + Math.random() * (layer.sizeMax - layer.sizeMin),
-              color: pick(palette),
+              color: pickRandomItem(palette),
               alpha: 1,
               drag: layer.dragMin + Math.random() * (layer.dragMax - layer.dragMin),
               trailMax: layer.trailMax,
@@ -816,11 +850,11 @@
             x: bx,
             y: by,
             vx: Math.cos(a) * speed,
-            vy: Math.sin(a) * speed - (1 + Math.random() * 1.4),
+            vy: Math.sin(a) * speed - (FIREWORKS_CONFIG.cometMinUpwardBias + Math.random() * FIREWORKS_CONFIG.cometUpwardBiasRange),
             g: 0.052 + Math.random() * 0.02,
             life: 58 + Math.random() * 24,
             size: 1.5 + Math.random() * 1.8,
-            color: pick(palette),
+            color: pickRandomItem(palette),
             alpha: 1,
             drag: 0.978 + Math.random() * 0.01,
             trailMax: 5,
@@ -853,6 +887,7 @@
 
     function fxLoop() {
       fxCtx.clearRect(0, 0, innerWidth, innerHeight);
+      fxCtx.save();
       fxCtx.globalCompositeOperation = "lighter";
 
       for (let i = particles.length - 1; i >= 0; i--) {
@@ -872,7 +907,7 @@
         const progress = 1 - p.life / p.maxLife;
         const fadeProgress = progress < p.fadeStart
           ? 1
-          : 1 - (progress - p.fadeStart) / Math.max(.001, 1 - p.fadeStart);
+          : 1 - (progress - p.fadeStart) / p.fadeRange;
         p.alpha = Math.max(0, Math.min(1, fadeProgress));
 
         if (p.trail.length > 1) {
@@ -881,18 +916,20 @@
           for (let t = 1; t < p.trail.length; t++) {
             fxCtx.lineTo(p.trail[t].x, p.trail[t].y);
           }
-          fxCtx.strokeStyle = p.color.replace("rgb", "rgba").replace(")", `,${p.alpha * 0.28})`);
-          fxCtx.lineWidth = Math.max(0.5, p.size * 0.52);
+          fxCtx.strokeStyle = toRgba(p.color, p.alpha * FIREWORKS_CONFIG.trailAlphaMultiplier);
+          fxCtx.lineWidth = Math.max(FIREWORKS_CONFIG.minTrailWidth, p.size * FIREWORKS_CONFIG.trailWidthMultiplier);
           fxCtx.shadowBlur = p.glow;
           fxCtx.shadowColor = p.color;
           fxCtx.stroke();
         }
 
-        const shimmer = 1 - p.twinkle * Math.sin((p.maxLife - p.life) * 0.45 + p.phase);
-        const drawSize = Math.max(0.65, p.size * shimmer);
+        const shimmer = p.twinkle
+          ? Math.max(0, 1 - p.twinkle * Math.sin((p.maxLife - p.life) * FIREWORKS_CONFIG.twinkleFrequency + p.phase))
+          : 1;
+        const drawSize = Math.max(FIREWORKS_CONFIG.minParticleSize, p.size * shimmer);
 
         fxCtx.beginPath();
-        fxCtx.fillStyle = p.color.replace("rgb", "rgba").replace(")", `,${p.alpha})`);
+        fxCtx.fillStyle = toRgba(p.color, p.alpha);
         fxCtx.shadowBlur = p.glow;
         fxCtx.shadowColor = p.color;
         fxCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
@@ -901,7 +938,7 @@
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      fxCtx.globalCompositeOperation = "source-over";
+      fxCtx.restore();
       requestAnimationFrame(fxLoop);
     }
 
