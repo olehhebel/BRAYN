@@ -1,21 +1,34 @@
 # BRAYN
 
-Репозиторій для HTML-прототипів, які публікуються через **GitHub Pages**.
+Репозиторій для статичних HTML-ігор і прототипів, які публікуються через **GitHub Pages**.
 
-## Файли
+## Поточна структура
 
-| Файл | Посилання |
-|------|-----------|
-| `wheel-of-fortune-brayn/` | 🧠 [Запустити](https://olehhebel.github.io/BRAYN/wheel-of-fortune-brayn/) |
+```text
+/
+├── index.html          # миттєвий редирект у ./BRAYN/
+├── .nojekyll
+├── BRAYN/
+│   ├── index.html      # основна гра
+│   └── assets/
+└── docs/
+    └── wheel-of-fortune-brayn/
+```
 
-## Як додати HTML-файл і отримати посилання
+## Посилання
 
-1. Покладіть файл у папку `docs/`
-2. GitHub Pages опублікує його за адресою:
-   ```
-   https://olehhebel.github.io/BRAYN/<назва-файлу>.html
-   ```
+| Шлях | Призначення | Посилання |
+|------|-------------|-----------|
+| `/` | редирект на основну гру | [Відкрити](https://olehhebel.github.io/BRAYN/) |
+| `/BRAYN/` | BRAYN Digger | [Запустити](https://olehhebel.github.io/BRAYN/BRAYN/) |
+| `/wheel-of-fortune-brayn/` | архівний wheel prototype з `docs/` | [Запустити](https://olehhebel.github.io/BRAYN/wheel-of-fortune-brayn/) |
+
+## Нотатки
+
+- Основний runtime тепер знаходиться в `BRAYN/index.html`.
+- Кореневий `index.html` одразу перенаправляє користувача в `./BRAYN/`.
+- `.nojekyll` додано для безпечного статичного хостингу на GitHub Pages.
 
 ---
 
-🧠 **[BRAYN Wheel of Fortune → Запустити](https://olehhebel.github.io/BRAYN/wheel-of-fortune-brayn/)**
+🧠 **[BRAYN Digger → Запустити](https://olehhebel.github.io/BRAYN/BRAYN/)**
