@@ -176,10 +176,16 @@
     const TILE_OPTIONS = [32, 28, 24];
     const MIN_COLS = 10;
     const MIN_ROWS = 16;
-    const LEGACY_LEVEL_ONE_MOVE_INTERVAL = 160;
-    const LEVEL_ONE_MOVE_INTERVAL = LEGACY_LEVEL_ONE_MOVE_INTERVAL / 1.25;
+    const LEVEL_ONE_MOVE_INTERVAL = 128; // 128ms yields a 1.25x move rate versus the prior 160ms level-1 interval.
     const LEVEL_SPEED_SCALE = 0.94;
+    const MIN_MOVE_INTERVAL = 76;
     const ENEMY_LAG_RATIO = 1.12;
+    const ENEMY_OPTIMAL_CHOICE_PROBABILITY = 0.72;
+    const ENEMY_RANDOM_CHOICE_POOL_SIZE = 3;
+    const ROCK_DENSITY_DIVISOR = 11;
+    const GEM_DENSITY_DIVISOR = 18;
+    const PLACEMENT_ATTEMPTS_MULTIPLIER = 40;
+    const INTRO_OVERLAY_MESSAGE = "Collect every gem.";
     const PLAYER_SPRITE = [
       "00111100",
       "01111110",
@@ -250,7 +256,7 @@
       lastTime: 0,
       playerAccumulator: 0,
       enemyAccumulator: 0,
-      overlayMessage: "Collect every crystal.",
+      overlayMessage: INTRO_OVERLAY_MESSAGE,
       overlayTime: 1800,
       invulnerableUntil: 0,
       started: false,
@@ -270,7 +276,7 @@
     }
 
     function getMoveInterval(level) {
-      return Math.max(76, LEVEL_ONE_MOVE_INTERVAL * Math.pow(LEVEL_SPEED_SCALE, level - 1));
+      return Math.max(MIN_MOVE_INTERVAL, LEVEL_ONE_MOVE_INTERVAL * Math.pow(LEVEL_SPEED_SCALE, level - 1));
     }
 
     function getEnemyInterval(level) {
@@ -335,8 +341,8 @@
       state.dirt[1][1] = false;
       state.dirt[1][2] = false;
 
-      const rockCount = Math.max(14, Math.floor((cols * rows) / 11));
-      const gemCount = Math.max(8, Math.floor((cols * rows) / 18));
+      const rockCount = Math.max(14, Math.floor((cols * rows) / ROCK_DENSITY_DIVISOR));
+      const gemCount = Math.max(8, Math.floor((cols * rows) / GEM_DENSITY_DIVISOR));
       const enemyCount = Math.min(5, 1 + Math.floor((level - 1) / 2));
 
       populateSet(state.rocks, rockCount, (x, y) => {
@@ -368,7 +374,7 @@
     }
 
     function populateSet(target, amount, validator) {
-      const attempts = amount * 40;
+      const attempts = amount * PLACEMENT_ATTEMPTS_MULTIPLIER;
       let placed = 0;
       for (let index = 0; index < attempts && placed < amount; index += 1) {
         const x = 1 + Math.floor(Math.random() * (state.layout.cols - 2));
@@ -431,7 +437,7 @@
       const gemId = keyFor(nextX, nextY);
       if (state.gems.delete(gemId)) {
         state.score += 150;
-        state.overlayMessage = "Crystal secured!";
+        state.overlayMessage = "Gem secured!";
         state.overlayTime = 520;
       }
 
@@ -466,7 +472,9 @@
         if (!options.length) continue;
 
         options.sort((left, right) => left.distance - right.distance);
-        const pick = Math.random() < 0.72 ? options[0] : options[Math.floor(Math.random() * Math.min(3, options.length))];
+        const pick = Math.random() < ENEMY_OPTIMAL_CHOICE_PROBABILITY
+          ? options[0]
+          : options[Math.floor(Math.random() * Math.min(ENEMY_RANDOM_CHOICE_POOL_SIZE, options.length))];
         enemy.x = pick.nextX;
         enemy.y = pick.nextY;
         enemy.direction = pick.direction;
@@ -622,7 +630,7 @@
       if (DIRECTIONS[direction]) {
         state.started = true;
         state.player.queued = direction;
-        if (!state.overlayTime || state.overlayMessage === "Collect every crystal.") {
+        if (!state.overlayTime || state.overlayMessage === INTRO_OVERLAY_MESSAGE) {
           state.overlayMessage = "";
           state.overlayTime = 0;
         }
