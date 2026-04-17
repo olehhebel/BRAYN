@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>BRAYN v0.15 — Onboarding Wireframe</title>
   <style>
     /* ───────────────────────── DESIGN TOKENS ───────────────────────── */
@@ -667,7 +667,7 @@
       <div class="signin-logo">BRAYN</div>
       <div class="signin-tagline">Your personal growth engine</div>
       <button class="social-btn social-apple" onclick="goTo('s-name')">
-        <span class="social-icon"></span> Continue with Apple
+        <span class="social-icon" aria-hidden="true">&#63743;</span> Continue with Apple
       </button>
       <button class="social-btn social-google" onclick="goTo('s-name')">
         <span class="social-icon">G</span> Continue with Google
@@ -1510,7 +1510,7 @@
     },
     grow: {
       pathTitle: 'Growth Acceleration Path',
-      whyPath: 'You chose to grow faster where you are. Kayra identifies what\'s actually holding you back and builds a focused acceleration plan — not more tasks, sharper moves.',
+      whyPath: 'You chose to grow faster where you are. Kayra identifies what\'s actually holding you back and builds a focused acceleration plan — not more tasks, but sharper moves.',
       mainBranch: 'Growth & Visibility',
       growth: 'Accelerate in your current role — find leverage points, increase visibility, and outperform expectations without burnout.',
       phase1Title: 'Leverage Mapping',
