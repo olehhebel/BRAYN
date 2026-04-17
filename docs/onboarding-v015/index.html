@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+  <title>BRAYN v0.15 — Onboarding Wireframe</title>
+  <style>
+    /* ───────────────────────── DESIGN TOKENS ───────────────────────── */
+    :root {
+      color-scheme: dark;
+      --bg: #0A0B14;
+      --bg-card: rgba(255,255,255,0.05);
+      --bg-card-strong: rgba(255,255,255,0.08);
+      --surface: #13141F;
+      --border: rgba(255,255,255,0.08);
+      --border-active: rgba(255,255,255,0.22);
+      --text-primary: #F0F1F6;
+      --text-secondary: rgba(240,241,246,0.55);
+      --text-tertiary: rgba(240,241,246,0.35);
+      --accent: #A855F7;
+      --accent-dim: rgba(168,85,247,0.18);
+      --kayra: #00DA30;
+      --kayra-dim: rgba(0,218,48,0.12);
+      --orra: #00FFFF;
+      --orra-dim: rgba(0,255,255,0.10);
+      --maverick: #FE6305;
+      --maverick-dim: rgba(254,99,5,0.12);
+      --gold: #FFD700;
+      --gold-dim: rgba(255,215,0,0.12);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-full: 999px;
+      --safe-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+      --safe-top: max(env(safe-area-inset-top, 0px), 12px);
+      --screen-max-w: 420px;
+      --font: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ───────────────────────── RESET ───────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--bg);
+      font-family: var(--font);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { overscroll-behavior: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input { font-family: inherit; }
+
+    /* ───────────────────────── MOBILE SHELL ───────────────────────── */
+    .app {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #060711;
+    }
+    .phone-frame {
+      position: relative;
+      width: 100%; max-width: var(--screen-max-w);
+      height: 100%; max-height: 900px;
+      background: var(--bg);
+      overflow: hidden;
+      border-radius: 0;
+    }
+    @media (min-width: 500px) {
+      .phone-frame {
+        border-radius: 40px;
+        border: 2px solid rgba(255,255,255,0.06);
+        box-shadow: 0 0 80px rgba(168,85,247,0.08), 0 40px 80px rgba(0,0,0,0.5);
+        height: 92vh;
+      }
+    }
+
+    /* ───────────────────────── SCREEN BASE ───────────────────────── */
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      padding: calc(var(--safe-top) + 12px) 24px var(--safe-bottom);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      transform: translateX(30px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen.active {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(0);
+    }
+    .screen.exit {
+      opacity: 0; transform: translateX(-30px);
+    }
+
+    /* ───────────────────────── TOPBAR ───────────────────────── */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 44px; flex-shrink: 0;
+      margin-bottom: 8px;
+    }
+    .topbar-back {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .topbar-back:active { background: var(--bg-card-strong); }
+    .topbar-step {
+      font-size: 12px; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+    .topbar-skip {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-tertiary);
+      padding: 8px;
+    }
+
+    /* ───────────────────────── PROGRESS BAR ───────────────────────── */
+    .progress-bar {
+      height: 3px; border-radius: 2px;
+      background: rgba(255,255,255,0.06);
+      margin-bottom: 24px; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), #c084fc);
+      transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ───────────────────────── TYPOGRAPHY ───────────────────────── */
+    .headline {
+      font-size: 26px; font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .subheadline {
+      font-size: 15px; font-weight: 400;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    .label-xs {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    /* ───────────────────────── BUBBLE SELECT ───────────────────────── */
+    .bubble-group {
+      display: flex; flex-direction: column;
+      gap: 10px; flex: 1;
+    }
+    .bubble {
+      display: flex; align-items: center;
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      font-size: 15px; font-weight: 500;
+      line-height: 1.35;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .bubble:active { transform: scale(0.97); }
+    .bubble.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 0 1px var(--accent), inset 0 0 20px rgba(168,85,247,0.06);
+    }
+    .bubble-dot {
+      width: 20px; height: 20px; min-width: 20px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      margin-right: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .bubble.selected .bubble-dot {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    .bubble.selected .bubble-dot::after {
+      content: '✓'; font-size: 11px; font-weight: 700; color: #fff;
+    }
+
+    /* ───────────────────────── CTA BUTTON ───────────────────────── */
+    .cta-area {
+      flex-shrink: 0;
+      padding-top: 16px;
+    }
+    .cta {
+      width: 100%; height: 54px;
+      border-radius: var(--radius-md);
+      font-size: 16px; font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all 0.25s ease;
+    }
+    .cta-primary {
+      background: linear-gradient(135deg, var(--accent), #9333ea);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(168,85,247,0.25);
+    }
+    .cta-primary:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 10px rgba(168,85,247,0.3);
+    }
+    .cta-disabled {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.2);
+      pointer-events: none;
+      box-shadow: none;
+    }
+    .cta-outline {
+      background: transparent;
+      border: 1.5px solid var(--border-active);
+      color: var(--text-primary);
+    }
+    .cta-outline:active { background: var(--bg-card); }
+
+    /* ───────────────────────── INPUT ───────────────────────── */
+    .input-field {
+      width: 100%; height: 56px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      padding: 0 18px;
+      font-size: 18px; font-weight: 500;
+      color: var(--text-primary);
+      caret-color: var(--accent);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field::placeholder { color: var(--text-tertiary); }
+    .input-field:focus { border-color: var(--accent); }
+
+    /* ───────────────────────── CARDS ───────────────────────── */
+    .card {
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+    .card-glow {
+      box-shadow: 0 0 30px rgba(168,85,247,0.08);
+    }
+
+    .reward-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+    .reward-icon {
+      font-size: 48px; margin-bottom: 12px;
+    }
+    .reward-value {
+      font-size: 36px; font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), #FFA500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .reward-label {
+      font-size: 14px; font-weight: 500;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .resource-card {
+      display: flex; align-items: center;
+      gap: 14px; padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+    .resource-icon {
+      width: 44px; height: 44px; min-width: 44px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .resource-name {
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .resource-desc {
+      font-size: 13px; font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.4; margin-top: 2px;
+    }
+
+    .trophy-area {
+      flex: 1; display: flex;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .trophy-badge {
+      width: 120px; height: 120px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--accent-dim), rgba(168,85,247,0.06));
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 60px rgba(168,85,247,0.15);
+    }
+
+    /* ───────────────────────── COACH PATH CARDS ───────────────────────── */
+    .coach-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .coach-avatar {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800;
+      color: var(--bg);
+    }
+    .coach-name {
+      font-size: 20px; font-weight: 700;
+    }
+    .coach-role {
+      font-size: 12px; color: var(--text-secondary);
+    }
+
+    .path-field {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .path-field:last-child { border-bottom: none; }
+    .path-field-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .path-field-value {
+      font-size: 14px; font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .phase-card {
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .phase-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .phase-title {
+      font-size: 15px; font-weight: 600;
+    }
+    .phase-desc {
+      font-size: 13px; color: var(--text-secondary);
+      margin-top: 4px; line-height: 1.4;
+    }
+
+    .boost-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .boost-icon {
+      width: 36px; height: 36px; min-width: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .boost-name { font-size: 14px; font-weight: 600; }
+    .boost-tag {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .proof-card {
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .id-update-card {
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .id-icon {
+      width: 36px; height: 36px; min-width: 36px;
+      border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* ───────────────────────── SPLASH ───────────────────────── */
+    .splash-center {
+      flex: 1; display: flex;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .splash-logo {
+      font-size: 42px; font-weight: 900;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .splash-version {
+      font-size: 13px; font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+    }
+    .splash-loader {
+      width: 40px; height: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.06);
+      margin-top: 32px;
+      overflow: hidden;
+    }
+    .splash-loader-fill {
+      height: 100%; width: 0;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: splashLoad 2.8s ease-in-out forwards;
+    }
+    @keyframes splashLoad { to { width: 100%; } }
+
+    /* ───────────────────────── SIGN-IN ───────────────────────── */
+    .signin-center {
+      flex: 1; display: flex;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .signin-logo {
+      font-size: 32px; font-weight: 900;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .signin-tagline {
+      font-size: 14px; color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+    .social-btn {
+      width: 100%; max-width: 320px;
+      height: 52px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px;
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .social-btn:active { transform: scale(0.97); }
+    .social-apple {
+      background: #fff; color: #000;
+    }
+    .social-google {
+      background: transparent; color: var(--text-primary);
+      border: 1.5px solid var(--border-active);
+    }
+    .social-icon { font-size: 20px; }
+
+    /* ───────────────────────── CONTRACT ───────────────────────── */
+    .contract-center {
+      flex: 1; display: flex;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .contract-emoji { font-size: 48px; margin-bottom: 16px; }
+    .contract-headline {
+      font-size: 22px; font-weight: 700;
+      line-height: 1.3;
+      max-width: 280px;
+    }
+    .contract-sub {
+      font-size: 14px; color: var(--text-secondary);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* ───────────────────────── FIRST TASK ───────────────────────── */
+    .task-live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .task-live-dot {
+      width: 8px; height: 8px;
+      border-radius: var(--radius-full);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ───────────────────────── DESKTOP LOGIC BOARD ───────────────────────── */
+    .logic-board {
+      position: fixed; inset: 0;
+      background: #060711;
+      overflow: auto;
+      display: none;
+      padding: 40px;
+    }
+    .logic-board.visible { display: block; }
+    .logic-board h1 {
+      font-size: 28px; font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .logic-board h2 {
+      font-size: 18px; font-weight: 700;
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logic-board h3 {
+      font-size: 15px; font-weight: 600;
+      margin: 16px 0 8px;
+    }
+    .logic-board p, .logic-board li {
+      font-size: 14px; line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    .logic-board ul { padding-left: 20px; }
+    .logic-board li { margin-bottom: 4px; }
+    .logic-board .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 600;
+      margin: 2px 4px 2px 0;
+    }
+    .flow-diagram {
+      display: flex; gap: 12px;
+      overflow-x: auto; padding: 16px 0;
+    }
+    .flow-node {
+      min-width: 140px; padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 13px; font-weight: 500;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .flow-arrow {
+      display: flex; align-items: center;
+      font-size: 18px; color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin: 16px 0;
+    }
+    .component-item {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .component-item strong {
+      display: block; font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .component-item span {
+      font-size: 12px; color: var(--text-tertiary);
+    }
+
+    /* ───────────────────────── VIEW TOGGLE ───────────────────────── */
+    .view-toggle {
+      position: fixed; top: 14px; right: 14px;
+      z-index: 100;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      background: rgba(20,20,40,0.85);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .view-toggle:hover { color: var(--text-primary); border-color: var(--border-active); }
+
+    /* ───────────────────────── SCROLLBAR ───────────────────────── */
+    .screen::-webkit-scrollbar { width: 3px; }
+    .screen::-webkit-scrollbar-track { background: transparent; }
+    .screen::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    /* ───────────────────────── ANNOTATION ───────────────────────── */
+    .annotation {
+      position: absolute;
+      right: -8px; top: 8px;
+      transform: translateX(100%);
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(168,85,247,0.15);
+      border: 1px solid rgba(168,85,247,0.3);
+      font-size: 10px; font-weight: 600;
+      color: #c084fc;
+      white-space: nowrap;
+      pointer-events: none;
+      display: none;
+    }
+    @media (min-width: 800px) {
+      .annotation { display: block; }
+    }
+
+    /* ───────────────────────── SPACER ───────────────────────── */
+    .spacer { flex: 1; }
+    .gap-8 { height: 8px; flex-shrink: 0; }
+    .gap-16 { height: 16px; flex-shrink: 0; }
+    .gap-24 { height: 24px; flex-shrink: 0; }
+
+    /* ───────────────────────── DIVIDER ───────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- VIEW TOGGLE -->
+<button class="view-toggle" id="viewToggle">⊞ Logic Board</button>
+
+<!-- ═══════════════════════ MOBILE PROTOTYPE ═══════════════════════ -->
+<div class="app" id="protoApp">
+<div class="phone-frame" id="phoneFrame">
+
+  <!-- ─── S1: SPLASH ─── -->
+  <div class="screen active" id="s-splash">
+    <div class="splash-center">
+      <div class="splash-logo">BRAYN</div>
+      <div class="splash-version">v0.15</div>
+      <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ─── S2: SIGN IN ─── -->
+  <div class="screen" id="s-signin">
+    <div class="signin-center">
+      <div class="signin-logo">BRAYN</div>
+      <div class="signin-tagline">Your personal growth engine</div>
+      <button class="social-btn social-apple" onclick="goTo('s-name')">
+        <span class="social-icon"></span> Continue with Apple
+      </button>
+      <button class="social-btn social-google" onclick="goTo('s-name')">
+        <span class="social-icon">G</span> Continue with Google
+      </button>
+    </div>
+    <div style="text-align:center; padding-bottom: 8px;">
+      <span style="font-size:11px; color:var(--text-tertiary);">By continuing you agree to our Terms & Privacy</span>
+    </div>
+  </div>
+
+  <!-- ─── S3: BRAYN NAME ─── -->
+  <div class="screen" id="s-name">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-signin')">←</button>
+      <span class="topbar-step">Step 1 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:16%"></div></div>
+    <h1 class="headline">Choose your<br>BRAYN name</h1>
+    <p class="subheadline">This is how you'll be known in your journey. You can change it later.</p>
+    <input
+      class="input-field"
+      id="nameInput"
+      type="text"
+      placeholder="Enter your name"
+      autocomplete="off"
+      maxlength="24"
+      oninput="onNameInput()"
+    />
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-disabled" id="nameCta" onclick="goTo('s-who')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S4: WHO ARE YOU ─── -->
+  <div class="screen" id="s-who">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-name')">←</button>
+      <span class="topbar-step">Step 2 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:33%"></div></div>
+    <h1 class="headline">Who are you?</h1>
+    <p class="subheadline">Pick the one that fits you best right now.</p>
+    <div class="bubble-group" id="whoGroup">
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I'm still figuring things out
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I'm looking for my first real role
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I'm a junior specialist
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I feel stuck in my current role
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I'm changing direction
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'whoGroup','s-who')">
+        <span class="bubble-dot"></span>I'm building something of my own
+      </button>
+    </div>
+    <div class="cta-area">
+      <button class="cta cta-disabled" id="whoCta" onclick="goTo('s-goal')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S5: GOAL ─── -->
+  <div class="screen" id="s-goal">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-who')">←</button>
+      <span class="topbar-step">Step 3 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:50%"></div></div>
+    <h1 class="headline">What's your goal?</h1>
+    <p class="subheadline">This shapes your personal learning path.</p>
+    <div class="bubble-group" id="goalGroup">
+      <button class="bubble" data-coach="kayra" data-goal="direction" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Find my direction
+      </button>
+      <button class="bubble" data-coach="kayra" data-goal="role" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Get my next role
+      </button>
+      <button class="bubble" data-coach="kayra" data-goal="grow" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Grow faster where I am
+      </button>
+      <button class="bubble" data-coach="kayra" data-goal="pivot" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Make a career pivot
+      </button>
+      <button class="bubble" data-coach="orra" data-goal="confidence" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Communicate with more confidence
+      </button>
+      <button class="bubble" data-coach="maverick" data-goal="action" onclick="selectGoal(this)">
+        <span class="bubble-dot"></span>Turn ideas into action
+      </button>
+    </div>
+    <div class="cta-area">
+      <button class="cta cta-disabled" id="goalCta" onclick="goTo('s-time')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S6: TIME ─── -->
+  <div class="screen" id="s-time">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-goal')">←</button>
+      <span class="topbar-step">Step 4 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:66%"></div></div>
+    <h1 class="headline">How much time can you actually give your goal each day?</h1>
+    <p class="subheadline">Be honest — there's no wrong answer. This is only a signal for your notifications.</p>
+    <div class="bubble-group" id="timeGroup">
+      <button class="bubble" onclick="selectBubble(this,'timeGroup','s-time')">
+        <span class="bubble-dot"></span>10 min
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'timeGroup','s-time')">
+        <span class="bubble-dot"></span>30 min
+      </button>
+      <button class="bubble" onclick="selectBubble(this,'timeGroup','s-time')">
+        <span class="bubble-dot"></span>45 min
+      </button>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-disabled" id="timeCta" onclick="goTo('s-reward')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S7: REWARD ─── -->
+  <div class="screen" id="s-reward">
+    <div class="topbar">
+      <span style="width:36px"></span>
+      <span class="topbar-step">Step 5 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:83%"></div></div>
+    <div class="spacer"></div>
+    <div style="text-align:center;">
+      <p class="label-xs" style="margin-bottom:24px; color:var(--gold);">WELCOME GIFT</p>
+      <div class="card reward-card card-glow" style="border-color: rgba(255,215,0,0.15);">
+        <div class="reward-icon">⚡</div>
+        <div class="reward-value">300</div>
+        <div class="reward-label">Neurons earned</div>
+      </div>
+      <div class="gap-8"></div>
+      <div class="card reward-card" style="border-color: rgba(168,85,247,0.15);">
+        <div class="reward-icon">🕐</div>
+        <div class="reward-value">2</div>
+        <div class="reward-label">Minutes unlocked</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" onclick="goTo('s-resources')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S8: EDUCATIONAL RESOURCES ─── -->
+  <div class="screen" id="s-resources">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-reward')">←</button>
+      <span class="topbar-step">Step 6 of 6</span>
+      <span style="width:36px"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:100%"></div></div>
+    <h1 class="headline" style="text-align:center; font-size:20px; line-height:1.35;">YOUR PROGRESS RUNS<br>ON FOUR RESOURCES</h1>
+    <div class="gap-24"></div>
+
+    <div class="resource-card">
+      <div class="resource-icon" style="background: var(--gold-dim); color: var(--gold);">⚡</div>
+      <div>
+        <div class="resource-name" style="color: var(--gold);">Neurons</div>
+        <div class="resource-desc">fuel your daily<br>actions & growth</div>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon" style="background: var(--accent-dim); color: var(--accent);">🕐</div>
+      <div>
+        <div class="resource-name" style="color: var(--accent);">Minutes</div>
+        <div class="resource-desc">power live coaching<br>with BRAYN AI</div>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon" style="background: rgba(0,200,255,0.10); color: #00C8FF;">🔗</div>
+      <div>
+        <div class="resource-name" style="color: #00C8FF;">Axons</div>
+        <div class="resource-desc">unlock advanced<br>learning</div>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon" style="background: rgba(0,255,150,0.10); color: #00FF96;">💎</div>
+      <div>
+        <div class="resource-name" style="color: #00FF96;">BRAYNBits</div>
+        <div class="resource-desc">track your<br>experience</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" onclick="goTo('s-trophy')">GOT IT</button>
+    </div>
+  </div>
+
+  <!-- ─── S9: TROPHY ─── -->
+  <div class="screen" id="s-trophy">
+    <div class="trophy-area">
+      <div class="trophy-badge">🏆</div>
+      <h1 class="headline" style="font-size:28px;">You're a BRAYNER</h1>
+      <p class="subheadline" style="max-width:260px;">Your personal growth journey starts now. Let's build your path.</p>
+    </div>
+    <div class="cta-area">
+      <button class="cta cta-primary" onclick="goTo('s-contract1')">LET'S GO</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.1: CONTRACT — LOCKED IN ─── -->
+  <div class="screen" id="s-contract1">
+    <div class="contract-center">
+      <div class="contract-emoji">🔒</div>
+      <div class="contract-headline">Heard! We're locked in and building your personal journey</div>
+      <div class="contract-sub">Give us a moment...</div>
+    </div>
+    <div class="cta-area">
+      <button class="cta cta-primary" onclick="goToReveal()">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.2: YOUR WAY — KAYRA ─── -->
+  <div class="screen" id="s-kayra">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-contract1')">←</button>
+      <span class="topbar-step" style="color:var(--kayra);">YOUR WAY</span>
+      <span style="width:36px"></span>
+    </div>
+
+    <div class="coach-header">
+      <div class="coach-avatar" style="background:var(--kayra);">K</div>
+      <div>
+        <div class="coach-name" style="color:var(--kayra);">Kayra</div>
+        <div class="coach-role">Your Primary Coach</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color: rgba(0,218,48,0.15);">
+      <div class="path-field">
+        <div class="path-field-label">Path Title</div>
+        <div class="path-field-value" id="kayraPathTitle">Career Clarity Path</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Why this path</div>
+        <div class="path-field-value" id="kayraWhyPath">You chose to find direction. Kayra builds a visible route out of ambiguity — reducing noise so you see your next real step clearly.</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Primary Branch</div>
+        <div class="path-field-value" id="kayraMainBranch">Direction & Readiness</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Support Branch</div>
+        <div class="path-field-value">Communication Foundations</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Current Growth Priority</div>
+        <div class="path-field-value" id="kayraGrowth">Eliminate career fog — map options, test assumptions, commit to a trajectory.</div>
+      </div>
+    </div>
+
+    <div class="phase-card" style="background:var(--kayra-dim); border:1px solid rgba(0,218,48,0.15);">
+      <div class="phase-label" style="color:var(--kayra);">Phase 1</div>
+      <div class="phase-title" id="kayraPhase1Title">Clarity Sprint</div>
+      <div class="phase-desc" id="kayraPhase1Desc">Define your direction, audit your skills, and create a first career map. Kayra guides you through practical reflection — no theory, just traction.</div>
+    </div>
+    <div class="phase-card" style="background:rgba(0,218,48,0.06); border:1px solid rgba(0,218,48,0.08);">
+      <div class="phase-label" style="color:rgba(0,218,48,0.6);">Phase 2</div>
+      <div class="phase-title" id="kayraPhase2Title">Readiness Build</div>
+      <div class="phase-desc" id="kayraPhase2Desc">Strengthen gaps, prepare visible proof, and position yourself for real opportunities.</div>
+    </div>
+
+    <div class="gap-16"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST MEANINGFUL ACTION</p>
+    <div class="boost-card" style="background:var(--kayra-dim); border:1px solid rgba(0,218,48,0.12);">
+      <div class="boost-icon" style="background:var(--kayra); color:var(--bg);">⚡</div>
+      <div>
+        <div class="boost-name" id="kayraBoostName">Role Direction Boost</div>
+        <div class="boost-tag">Full Boost · ~15 min</div>
+      </div>
+    </div>
+
+    <div class="gap-8"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST PROOF DIRECTION</p>
+    <div class="proof-card" style="background:var(--kayra-dim); border:1px solid rgba(0,218,48,0.12);">
+      <div style="font-size:13px; color:var(--text-secondary); line-height:1.5;" id="kayraProof">Complete one Boost. Kayra updates your progress map and sharpens your next step based on real action, not guesswork.</div>
+    </div>
+
+    <div class="gap-8"></div>
+    <div class="id-update-card" style="background:var(--kayra-dim); border:1px solid rgba(0,218,48,0.10);">
+      <div class="id-icon" style="background:var(--kayra); color:var(--bg);">ID</div>
+      <div style="font-size:13px;">
+        <strong>BRAYN ID Update Trigger</strong><br>
+        <span style="color:var(--text-secondary);">First Boost completed → BRAYN ID reflects growth entry</span>
+      </div>
+    </div>
+
+    <div class="gap-16"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--kayra), #00a025);" onclick="goTo('s-task-kayra')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.2: YOUR WAY — ORRA ─── -->
+  <div class="screen" id="s-orra">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-contract1')">←</button>
+      <span class="topbar-step" style="color:var(--orra);">YOUR WAY</span>
+      <span style="width:36px"></span>
+    </div>
+
+    <div class="coach-header">
+      <div class="coach-avatar" style="background:var(--orra);">O</div>
+      <div>
+        <div class="coach-name" style="color:var(--orra);">Orra</div>
+        <div class="coach-role">Your Primary Coach</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color: rgba(0,255,255,0.15);">
+      <div class="path-field">
+        <div class="path-field-label">Path Title</div>
+        <div class="path-field-value">Communication Performance Path</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Why this path</div>
+        <div class="path-field-value">You want to communicate with more confidence. Orra trains you for real conversations — not theory slides, but live-moment readiness that changes how people hear you.</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Primary Branch</div>
+        <div class="path-field-value">Confidence & Expression</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Support Branch</div>
+        <div class="path-field-value">Career Narrative</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Current Growth Priority</div>
+        <div class="path-field-value">Own the room in real moments — speak with clarity, handle pressure, and turn conversations into career leverage.</div>
+      </div>
+    </div>
+
+    <div class="phase-card" style="background:var(--orra-dim); border:1px solid rgba(0,255,255,0.15);">
+      <div class="phase-label" style="color:var(--orra);">Phase 1</div>
+      <div class="phase-title">Confidence Activation</div>
+      <div class="phase-desc">Build your personal communication script. Orra walks you through real scenarios — how to open, hold attention, and close with impact.</div>
+    </div>
+    <div class="phase-card" style="background:rgba(0,255,255,0.04); border:1px solid rgba(0,255,255,0.08);">
+      <div class="phase-label" style="color:rgba(0,255,255,0.6);">Phase 2</div>
+      <div class="phase-title">Performance Under Pressure</div>
+      <div class="phase-desc">Handle tough questions, pushback, and high-stakes moments. Train your responses until they feel natural under pressure.</div>
+    </div>
+
+    <div class="gap-16"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST MEANINGFUL ACTION</p>
+    <div class="boost-card" style="background:var(--orra-dim); border:1px solid rgba(0,255,255,0.12);">
+      <div class="boost-icon" style="background:var(--orra); color:var(--bg);">⚡</div>
+      <div>
+        <div class="boost-name">Conversation Script Boost</div>
+        <div class="boost-tag">Full Boost · ~12 min</div>
+      </div>
+    </div>
+
+    <div class="gap-8"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST PROOF DIRECTION</p>
+    <div class="proof-card" style="background:var(--orra-dim); border:1px solid rgba(0,255,255,0.12);">
+      <div style="font-size:13px; color:var(--text-secondary); line-height:1.5;">Complete your first Boost. Orra adapts your next session based on how you express yourself — building a communication style that's genuinely yours.</div>
+    </div>
+
+    <div class="gap-8"></div>
+    <div class="id-update-card" style="background:var(--orra-dim); border:1px solid rgba(0,255,255,0.10);">
+      <div class="id-icon" style="background:var(--orra); color:var(--bg);">ID</div>
+      <div style="font-size:13px;">
+        <strong>BRAYN ID Update Trigger</strong><br>
+        <span style="color:var(--text-secondary);">First Boost completed → BRAYN ID reflects confidence baseline</span>
+      </div>
+    </div>
+
+    <div class="gap-16"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--orra), #0099aa);" onclick="goTo('s-task-orra')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.2: YOUR WAY — MAVERICK ─── -->
+  <div class="screen" id="s-maverick">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s-contract1')">←</button>
+      <span class="topbar-step" style="color:var(--maverick);">YOUR WAY</span>
+      <span style="width:36px"></span>
+    </div>
+
+    <div class="coach-header">
+      <div class="coach-avatar" style="background:var(--maverick);">M</div>
+      <div>
+        <div class="coach-name" style="color:var(--maverick);">Maverick</div>
+        <div class="coach-role">Your Primary Coach</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color: rgba(254,99,5,0.15);">
+      <div class="path-field">
+        <div class="path-field-label">Path Title</div>
+        <div class="path-field-value">Builder Execution Path</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Why this path</div>
+        <div class="path-field-value">You chose to turn ideas into action. Maverick doesn't do brainstorming loops — he builds an execution rhythm that moves your ideas from notes into structured, testable progress.</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Primary Branch</div>
+        <div class="path-field-value">Validation & Execution</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Support Branch</div>
+        <div class="path-field-value">Pitch & Positioning</div>
+      </div>
+      <div class="path-field">
+        <div class="path-field-label">Current Growth Priority</div>
+        <div class="path-field-value">Stop planning in circles — validate fast, build proof, and move your idea into something others can see and respond to.</div>
+      </div>
+    </div>
+
+    <div class="phase-card" style="background:var(--maverick-dim); border:1px solid rgba(254,99,5,0.15);">
+      <div class="phase-label" style="color:var(--maverick);">Phase 1</div>
+      <div class="phase-title">Validation Sprint</div>
+      <div class="phase-desc">Take your strongest idea and run it through Maverick's validation framework. Output: a testable concept with real structure, not another brainstorm doc.</div>
+    </div>
+    <div class="phase-card" style="background:rgba(254,99,5,0.05); border:1px solid rgba(254,99,5,0.08);">
+      <div class="phase-label" style="color:rgba(254,99,5,0.6);">Phase 2</div>
+      <div class="phase-title">First Pitch Build</div>
+      <div class="phase-desc">Package what you've validated into something presentable. Maverick guides you to build a pitch that earns attention and feedback.</div>
+    </div>
+
+    <div class="gap-16"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST MEANINGFUL ACTION</p>
+    <div class="boost-card" style="background:var(--maverick-dim); border:1px solid rgba(254,99,5,0.12);">
+      <div class="boost-icon" style="background:var(--maverick); color:#fff;">⚡</div>
+      <div>
+        <div class="boost-name">Idea Validation Boost</div>
+        <div class="boost-tag">Full Boost · ~18 min</div>
+      </div>
+    </div>
+
+    <div class="gap-8"></div>
+    <p class="label-xs" style="margin-bottom:8px;">FIRST PROOF DIRECTION</p>
+    <div class="proof-card" style="background:var(--maverick-dim); border:1px solid rgba(254,99,5,0.12);">
+      <div style="font-size:13px; color:var(--text-secondary); line-height:1.5;">Complete one Boost. Maverick sharpens your execution path based on what you actually built — not what you planned to build.</div>
+    </div>
+
+    <div class="gap-8"></div>
+    <div class="id-update-card" style="background:var(--maverick-dim); border:1px solid rgba(254,99,5,0.10);">
+      <div class="id-icon" style="background:var(--maverick); color:#fff;">ID</div>
+      <div style="font-size:13px;">
+        <strong>BRAYN ID Update Trigger</strong><br>
+        <span style="color:var(--text-secondary);">First Boost completed → BRAYN ID reflects builder entry</span>
+      </div>
+    </div>
+
+    <div class="gap-16"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--maverick), #cc4e00);" onclick="goTo('s-task-maverick')">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.3: FIRST TASK — KAYRA ─── -->
+  <div class="screen" id="s-task-kayra">
+    <div class="spacer"></div>
+    <div style="text-align:center;">
+      <div class="task-live-badge" style="background:var(--kayra-dim); color:var(--kayra); border:1px solid rgba(0,218,48,0.2);">
+        <span class="task-live-dot" style="background:var(--kayra);"></span> FIRST TASK IS LIVE
+      </div>
+      <h1 class="headline" style="font-size:24px; margin-bottom:12px;">Your journey starts<br>with clarity</h1>
+      <p class="subheadline" style="max-width:280px; margin:0 auto 24px;">Kayra has prepared your first Boost. Complete it to unlock your career direction map.</p>
+    </div>
+    <div class="boost-card" style="background:var(--kayra-dim); border:1px solid rgba(0,218,48,0.15); padding:18px;">
+      <div class="boost-icon" style="background:var(--kayra); color:var(--bg);">⚡</div>
+      <div>
+        <div class="boost-name" id="kayraTaskBoost">Role Direction Boost</div>
+        <div class="boost-tag">Full Boost · Your first action</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--kayra), #00a025);" onclick="goTo('s-end')">START BOOST</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.3: FIRST TASK — ORRA ─── -->
+  <div class="screen" id="s-task-orra">
+    <div class="spacer"></div>
+    <div style="text-align:center;">
+      <div class="task-live-badge" style="background:var(--orra-dim); color:var(--orra); border:1px solid rgba(0,255,255,0.2);">
+        <span class="task-live-dot" style="background:var(--orra);"></span> FIRST TASK IS LIVE
+      </div>
+      <h1 class="headline" style="font-size:24px; margin-bottom:12px;">Your voice is your<br>strongest tool</h1>
+      <p class="subheadline" style="max-width:280px; margin:0 auto 24px;">Orra has prepared your first Boost. Complete it to unlock your personal communication script.</p>
+    </div>
+    <div class="boost-card" style="background:var(--orra-dim); border:1px solid rgba(0,255,255,0.15); padding:18px;">
+      <div class="boost-icon" style="background:var(--orra); color:var(--bg);">⚡</div>
+      <div>
+        <div class="boost-name">Conversation Script Boost</div>
+        <div class="boost-tag">Full Boost · Your first action</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--orra), #0099aa);" onclick="goTo('s-end')">START BOOST</button>
+    </div>
+  </div>
+
+  <!-- ─── S10.3: FIRST TASK — MAVERICK ─── -->
+  <div class="screen" id="s-task-maverick">
+    <div class="spacer"></div>
+    <div style="text-align:center;">
+      <div class="task-live-badge" style="background:var(--maverick-dim); color:var(--maverick); border:1px solid rgba(254,99,5,0.2);">
+        <span class="task-live-dot" style="background:var(--maverick);"></span> FIRST TASK IS LIVE
+      </div>
+      <h1 class="headline" style="font-size:24px; margin-bottom:12px;">Ideas are worthless<br>until they move</h1>
+      <p class="subheadline" style="max-width:280px; margin:0 auto 24px;">Maverick has prepared your first Boost. Complete it to validate your strongest idea with real structure.</p>
+    </div>
+    <div class="boost-card" style="background:var(--maverick-dim); border:1px solid rgba(254,99,5,0.15); padding:18px;">
+      <div class="boost-icon" style="background:var(--maverick); color:#fff;">⚡</div>
+      <div>
+        <div class="boost-name">Idea Validation Boost</div>
+        <div class="boost-tag">Full Boost · Your first action</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta-area">
+      <button class="cta cta-primary" style="background:linear-gradient(135deg, var(--maverick), #cc4e00);" onclick="goTo('s-end')">START BOOST</button>
+    </div>
+  </div>
+
+  <!-- ─── END STATE ─── -->
+  <div class="screen" id="s-end">
+    <div class="contract-center">
+      <div class="contract-emoji">🚀</div>
+      <div class="contract-headline">Prototype complete</div>
+      <div class="contract-sub">This is the end of the onboarding wireframe flow. In production, this transitions to the main BRAYN experience.</div>
+    </div>
+    <div class="cta-area">
+      <button class="cta cta-outline" onclick="restart()">RESTART FLOW</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+</div><!-- /app -->
+
+
+<!-- ═══════════════════════ DESKTOP LOGIC BOARD ═══════════════════════ -->
+<div class="logic-board" id="logicBoard">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <h1>BRAYN v0.15 — Onboarding Logic Board</h1>
+      <button class="view-toggle" style="position:static;" onclick="toggleView()">← Back to Prototype</button>
+    </div>
+    <p style="color:var(--text-secondary); margin-bottom:32px;">Design specification, routing logic, component inventory, and handoff notes.</p>
+
+    <!-- FLOW DIAGRAM -->
+    <h2>Shared Onboarding Flow</h2>
+    <div class="flow-diagram">
+      <div class="flow-node" style="border-color:var(--accent);">S1<br><strong>Splash</strong><br><span style="font-size:11px;color:var(--text-tertiary);">3s auto</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S2<br><strong>Sign In</strong><br><span style="font-size:11px;color:var(--text-tertiary);">Apple / Google</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S3<br><strong>BRAYN Name</strong><br><span style="font-size:11px;color:var(--text-tertiary);">2+ chars</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S4<br><strong>Who Are You</strong><br><span style="font-size:11px;color:var(--text-tertiary);">6 options</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S5<br><strong>Goal</strong><br><span style="font-size:11px;color:var(--text-tertiary);">6 options → route</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S6<br><strong>Time</strong><br><span style="font-size:11px;color:var(--text-tertiary);">10/30/45 min</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--gold);">S7<br><strong>Reward</strong><br><span style="font-size:11px;color:var(--text-tertiary);">300N + 2M</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S8<br><strong>Resources</strong><br><span style="font-size:11px;color:var(--text-tertiary);">4 resources</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--gold);">S9<br><strong>Trophy</strong><br><span style="font-size:11px;color:var(--text-tertiary);">BRAYNER</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">S10.1<br><strong>Contract</strong><br><span style="font-size:11px;color:var(--text-tertiary);">Locked in</span></div>
+    </div>
+
+    <!-- ROUTING -->
+    <h2>Coach Routing from Screen 5</h2>
+    <div class="flow-diagram">
+      <div class="flow-node" style="border-color:var(--accent);">S10.1<br><strong>Contract</strong></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--kayra); background:var(--kayra-dim);">
+        <strong style="color:var(--kayra);">KAYRA</strong><br>
+        <span style="font-size:11px;color:var(--text-secondary);">Find direction<br>Get next role<br>Grow faster<br>Career pivot</span>
+      </div>
+      <div class="flow-node" style="border-color:var(--orra); background:var(--orra-dim);">
+        <strong style="color:var(--orra);">ORRA</strong><br>
+        <span style="font-size:11px;color:var(--text-secondary);">Communicate with<br>more confidence</span>
+      </div>
+      <div class="flow-node" style="border-color:var(--maverick); background:var(--maverick-dim);">
+        <strong style="color:var(--maverick);">MAVERICK</strong><br>
+        <span style="font-size:11px;color:var(--text-secondary);">Turn ideas<br>into action</span>
+      </div>
+    </div>
+
+    <!-- COACH FLOWS -->
+    <h2>Three Coach Reveal Flows</h2>
+
+    <h3 style="color:var(--kayra);">Kayra Flow (Career Clarity)</h3>
+    <div class="flow-diagram">
+      <div class="flow-node" style="border-color:var(--kayra);">S10.2<br><strong>YOUR WAY</strong><br><span style="font-size:11px;">Path reveal</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--kayra);">S10.3<br><strong>First Task</strong><br><span style="font-size:11px;">Role Direction Boost</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">Main<br><strong>Experience</strong></div>
+    </div>
+    <p>
+      <span class="tag" style="background:var(--kayra-dim); color:var(--kayra);">Role Direction Boost</span>
+      <span class="tag" style="background:var(--kayra-dim); color:var(--kayra);">Role Readiness Boost</span>
+      <span class="tag" style="background:var(--kayra-dim); color:var(--kayra);">Growth Gap Boost</span>
+      <span class="tag" style="background:var(--kayra-dim); color:var(--kayra);">Pivot Narrative Boost</span>
+    </p>
+    <p style="margin-top:8px;"><strong>Copy direction:</strong> Clarity, career route, readiness, visible growth, practical direction, reducing chaos.</p>
+
+    <h3 style="color:var(--orra); margin-top:20px;">Orra Flow (Communication Performance)</h3>
+    <div class="flow-diagram">
+      <div class="flow-node" style="border-color:var(--orra);">S10.2<br><strong>YOUR WAY</strong><br><span style="font-size:11px;">Path reveal</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--orra);">S10.3<br><strong>First Task</strong><br><span style="font-size:11px;">Conversation Script Boost</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">Main<br><strong>Experience</strong></div>
+    </div>
+    <p>
+      <span class="tag" style="background:var(--orra-dim); color:var(--orra);">Conversation Script Boost</span>
+      <span class="tag" style="background:var(--orra-dim); color:var(--orra);">Confidence Playbook Boost</span>
+    </p>
+    <p style="margin-top:8px;"><strong>Copy direction:</strong> Confidence in real conversations, communication performance, live moments, stronger expression.</p>
+
+    <h3 style="color:var(--maverick); margin-top:20px;">Maverick Flow (Builder Execution)</h3>
+    <div class="flow-diagram">
+      <div class="flow-node" style="border-color:var(--maverick);">S10.2<br><strong>YOUR WAY</strong><br><span style="font-size:11px;">Path reveal</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--maverick);">S10.3<br><strong>First Task</strong><br><span style="font-size:11px;">Idea Validation Boost</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">Main<br><strong>Experience</strong></div>
+    </div>
+    <p>
+      <span class="tag" style="background:var(--maverick-dim); color:var(--maverick);">Idea Validation Boost</span>
+      <span class="tag" style="background:var(--maverick-dim); color:var(--maverick);">First Pitch Boost</span>
+    </p>
+    <p style="margin-top:8px;"><strong>Copy direction:</strong> Action, validation, execution rhythm, moving ideas into real structured progress.</p>
+
+    <!-- RELATIONSHIPS -->
+    <h2>Screen Relationship Map</h2>
+    <ul>
+      <li><strong>Reward (S7)</strong> → pure celebration, earns 300 Neurons + 2 Minutes</li>
+      <li><strong>Education (S8)</strong> → explainer of all 4 resources (Neurons, Minutes, Axons, BRAYNBits)</li>
+      <li><strong>Trophy (S9)</strong> → identity milestone — "You're a BRAYNER"</li>
+      <li><strong>Contract (S10.1)</strong> → emotional lock-in, transitions to personalized reveal</li>
+      <li><strong>YOUR WAY (S10.2)</strong> → 3 distinct coach reveal flows, shows path details and first Boost</li>
+      <li><strong>First Task (S10.3)</strong> → launches first full Boost, entry into the main experience</li>
+    </ul>
+
+    <!-- DYNAMIC KAYRA CONTENT -->
+    <h2>Kayra Goal-Specific Path Variants</h2>
+    <p>Kayra's YOUR WAY screen dynamically adjusts based on which of the 4 goals was selected:</p>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-top:12px;">
+      <div class="component-item" style="border-color:rgba(0,218,48,0.15);">
+        <strong style="color:var(--kayra);">Find my direction</strong>
+        <span>Path: Career Clarity Path<br>Boost: Role Direction Boost<br>Growth: Eliminate career fog</span>
+      </div>
+      <div class="component-item" style="border-color:rgba(0,218,48,0.15);">
+        <strong style="color:var(--kayra);">Get my next role</strong>
+        <span>Path: Role Readiness Path<br>Boost: Role Readiness Boost<br>Growth: Close the gap to your next role</span>
+      </div>
+      <div class="component-item" style="border-color:rgba(0,218,48,0.15);">
+        <strong style="color:var(--kayra);">Grow faster where I am</strong>
+        <span>Path: Growth Acceleration Path<br>Boost: Growth Gap Boost<br>Growth: Accelerate in your current role</span>
+      </div>
+      <div class="component-item" style="border-color:rgba(0,218,48,0.15);">
+        <strong style="color:var(--kayra);">Make a career pivot</strong>
+        <span>Path: Pivot Strategy Path<br>Boost: Pivot Narrative Boost<br>Growth: Build a compelling pivot story</span>
+      </div>
+    </div>
+
+    <!-- COMPONENT INVENTORY -->
+    <h2>Component Inventory</h2>
+    <div class="component-grid">
+      <div class="component-item">
+        <strong>Bubble</strong>
+        <span>default / selected / disabled</span>
+      </div>
+      <div class="component-item">
+        <strong>CTA Button</strong>
+        <span>default / active / disabled / pressed</span>
+      </div>
+      <div class="component-item">
+        <strong>Input Field</strong>
+        <span>default / typing / filled / keyboard-open</span>
+      </div>
+      <div class="component-item">
+        <strong>Reward Card</strong>
+        <span>icon + value + label, glow variant</span>
+      </div>
+      <div class="component-item">
+        <strong>Resource Explainer Card</strong>
+        <span>icon + name + description</span>
+      </div>
+      <div class="component-item">
+        <strong>Trophy Card</strong>
+        <span>badge + title + subtitle</span>
+      </div>
+      <div class="component-item">
+        <strong>Coach Card</strong>
+        <span>avatar + name + role, per coach color</span>
+      </div>
+      <div class="component-item">
+        <strong>Path Summary Card</strong>
+        <span>field-value pairs: path, why, branch, priority</span>
+      </div>
+      <div class="component-item">
+        <strong>Phase Card</strong>
+        <span>label + title + desc, active/upcoming states</span>
+      </div>
+      <div class="component-item">
+        <strong>Boost Card</strong>
+        <span>icon + name + tag, per coach color</span>
+      </div>
+      <div class="component-item">
+        <strong>First Proof Card</strong>
+        <span>centered description, coach-colored bg</span>
+      </div>
+      <div class="component-item">
+        <strong>BRAYN ID Update Card</strong>
+        <span>ID icon + trigger description</span>
+      </div>
+      <div class="component-item">
+        <strong>Progress Bar</strong>
+        <span>gradient fill, step-driven width</span>
+      </div>
+      <div class="component-item">
+        <strong>Topbar</strong>
+        <span>back + step label + skip</span>
+      </div>
+      <div class="component-item">
+        <strong>Social Sign-in Button</strong>
+        <span>Apple (filled) / Google (outlined)</span>
+      </div>
+      <div class="component-item">
+        <strong>Task Live Badge</strong>
+        <span>pulse dot + label, per coach color</span>
+      </div>
+    </div>
+
+    <!-- HANDOFF NOTES -->
+    <h2>Developer / MCP Handoff Notes</h2>
+    <ul>
+      <li><strong>Terminology:</strong> "Sprint" → "Phase" in visible UI. "Nanoframework" → "Boost". First task = full Boost.</li>
+      <li><strong>Screen 6 rule:</strong> Time answer is only a nominal signal for future notification setup. It does NOT define phase depth.</li>
+      <li><strong>Coach routing:</strong> Determined by Screen 5 (goal) selection. Kayra = 4 goals, Orra = 1 goal, Maverick = 1 goal.</li>
+      <li><strong>Kayra sub-routing:</strong> Each of 4 Kayra goals maps to a different path title, boost, and growth priority.</li>
+      <li><strong>Input validation:</strong> BRAYN name CTA active only after 2+ characters entered.</li>
+      <li><strong>Bubble select:</strong> Single-select only — selecting a new bubble deselects the previous one.</li>
+      <li><strong>Splash:</strong> 3-second auto-advance. No user interaction required.</li>
+      <li><strong>Navigation:</strong> Back button on all non-reward/celebration screens. No dead ends. Single primary CTA per screen.</li>
+      <li><strong>Auto-layout:</strong> All screens use flex column layout with safe-area padding. Mobile-first. Max width 420px.</li>
+      <li><strong>Colors:</strong> Kayra #00DA30, Orra #00FFFF, Maverick #FE6305. Accent #A855F7. Background #0A0B14.</li>
+      <li><strong>Prototype is live at:</strong> <code>/docs/onboarding-v015/</code> on GitHub Pages.</li>
+    </ul>
+
+    <!-- DESIGN TOKENS -->
+    <h2>Design Token Reference</h2>
+    <div class="component-grid">
+      <div class="component-item"><strong>--bg</strong><span>#0A0B14</span></div>
+      <div class="component-item"><strong>--surface</strong><span>#13141F</span></div>
+      <div class="component-item"><strong>--accent</strong><span>#A855F7</span></div>
+      <div class="component-item"><strong>--kayra</strong><span>#00DA30</span></div>
+      <div class="component-item"><strong>--orra</strong><span>#00FFFF</span></div>
+      <div class="component-item"><strong>--maverick</strong><span>#FE6305</span></div>
+      <div class="component-item"><strong>--gold</strong><span>#FFD700</span></div>
+      <div class="component-item"><strong>--radius-sm</strong><span>10px</span></div>
+      <div class="component-item"><strong>--radius-md</strong><span>16px</span></div>
+      <div class="component-item"><strong>--radius-lg</strong><span>24px</span></div>
+      <div class="component-item"><strong>Font</strong><span>SF Pro Display / Inter / system</span></div>
+      <div class="component-item"><strong>Screen max-width</strong><span>420px</span></div>
+    </div>
+
+    <div class="gap-24"></div>
+    <div class="divider"></div>
+    <p style="color:var(--text-tertiary); font-size:12px; text-align:center; padding: 16px 0 40px;">
+      BRAYN v0.15 Onboarding Wireframe System — Mid-fi interactive prototype & design spec<br>
+      Created for Figma implementation reference
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+  // ── State ──
+  let currentScreen = 's-splash';
+  let selectedCoach = null;
+  let selectedGoal = null;
+  let showingLogicBoard = false;
+
+  // ── Kayra goal-specific content ──
+  const kayraVariants = {
+    direction: {
+      pathTitle: 'Career Clarity Path',
+      whyPath: 'You chose to find direction. Kayra builds a visible route out of ambiguity — reducing noise so you see your next real step clearly.',
+      mainBranch: 'Direction & Readiness',
+      growth: 'Eliminate career fog — map options, test assumptions, commit to a trajectory.',
+      phase1Title: 'Clarity Sprint',
+      phase1Desc: 'Define your direction, audit your skills, and create a first career map. Kayra guides you through practical reflection — no theory, just traction.',
+      phase2Title: 'Readiness Build',
+      phase2Desc: 'Strengthen gaps, prepare visible proof, and position yourself for real opportunities.',
+      boostName: 'Role Direction Boost',
+      proof: 'Complete one Boost. Kayra updates your progress map and sharpens your next step based on real action, not guesswork.',
+    },
+    role: {
+      pathTitle: 'Role Readiness Path',
+      whyPath: 'You chose to get your next role. Kayra prepares you with precision — identifying gaps, building proof, and creating a readiness plan that actually gets you there.',
+      mainBranch: 'Role Targeting & Preparation',
+      growth: 'Close the gap between where you are and the role you want — with a visible, structured readiness plan.',
+      phase1Title: 'Gap Audit',
+      phase1Desc: 'Map the distance between your current profile and your target role. Kayra surfaces blind spots and creates a focused action list.',
+      phase2Title: 'Portfolio & Proof',
+      phase2Desc: 'Build tangible proof points that make your readiness visible to anyone evaluating you.',
+      boostName: 'Role Readiness Boost',
+      proof: 'Complete one Boost. Kayra adjusts your readiness roadmap based on your actual strengths and gaps — not generic advice.',
+    },
+    grow: {
+      pathTitle: 'Growth Acceleration Path',
+      whyPath: 'You chose to grow faster where you are. Kayra identifies what\'s actually holding you back and builds a focused acceleration plan — not more tasks, sharper moves.',
+      mainBranch: 'Growth & Visibility',
+      growth: 'Accelerate in your current role — find leverage points, increase visibility, and outperform expectations without burnout.',
+      phase1Title: 'Leverage Mapping',
+      phase1Desc: 'Identify the highest-impact growth moves in your current role. Kayra helps you focus on what actually accelerates careers.',
+      phase2Title: 'Visibility Sprint',
+      phase2Desc: 'Make your growth visible to the people who decide your trajectory — managers, stakeholders, decision-makers.',
+      boostName: 'Growth Gap Boost',
+      proof: 'Complete one Boost. Kayra recalibrates your growth focus based on real outputs, not assumptions about what matters.',
+    },
+    pivot: {
+      pathTitle: 'Pivot Strategy Path',
+      whyPath: 'You chose to make a career pivot. Kayra doesn\'t do wishful thinking — she builds a structured pivot narrative that connects your past to your future in a way that makes sense to others.',
+      mainBranch: 'Pivot Narrative & Positioning',
+      growth: 'Build a compelling pivot story — connect your experience to your new direction so it reads as intentional, not random.',
+      phase1Title: 'Narrative Build',
+      phase1Desc: 'Craft your pivot story. Kayra guides you to connect dots between your past experience and your desired direction.',
+      phase2Title: 'Position & Validate',
+      phase2Desc: 'Test your pivot narrative with real feedback and refine your positioning until it opens the right doors.',
+      boostName: 'Pivot Narrative Boost',
+      proof: 'Complete one Boost. Kayra refines your pivot angle based on how you articulate your transition — sharpening it with each action.',
+    }
+  };
+
+  // ── Splash auto-advance ──
+  setTimeout(() => {
+    if (currentScreen === 's-splash') goTo('s-signin');
+  }, 3000);
+
+  // ── Navigation ──
+  function goTo(id) {
+    const prev = document.getElementById(currentScreen);
+    const next = document.getElementById(id);
+    if (!prev || !next || currentScreen === id) return;
+
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 400);
+
+    next.classList.add('active');
+    currentScreen = id;
+
+    // Scroll to top
+    next.scrollTop = 0;
+  }
+
+  function goToReveal() {
+    if (selectedCoach === 'kayra') {
+      applyKayraVariant();
+      goTo('s-kayra');
+    } else if (selectedCoach === 'orra') {
+      goTo('s-orra');
+    } else if (selectedCoach === 'maverick') {
+      goTo('s-maverick');
+    } else {
+      // Fallback to Kayra
+      selectedCoach = 'kayra';
+      selectedGoal = 'direction';
+      applyKayraVariant();
+      goTo('s-kayra');
+    }
+  }
+
+  function applyKayraVariant() {
+    const v = kayraVariants[selectedGoal] || kayraVariants.direction;
+    document.getElementById('kayraPathTitle').textContent = v.pathTitle;
+    document.getElementById('kayraWhyPath').textContent = v.whyPath;
+    document.getElementById('kayraMainBranch').textContent = v.mainBranch;
+    document.getElementById('kayraGrowth').textContent = v.growth;
+    document.getElementById('kayraPhase1Title').textContent = v.phase1Title;
+    document.getElementById('kayraPhase1Desc').textContent = v.phase1Desc;
+    document.getElementById('kayraPhase2Title').textContent = v.phase2Title;
+    document.getElementById('kayraPhase2Desc').textContent = v.phase2Desc;
+    document.getElementById('kayraBoostName').textContent = v.boostName;
+    document.getElementById('kayraProof').textContent = v.proof;
+    document.getElementById('kayraTaskBoost').textContent = v.boostName;
+  }
+
+  // ── Bubble select ──
+  function selectBubble(el, groupId, screenId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.bubble').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // Enable CTA
+    const ctaMap = { 's-who': 'whoCta', 's-time': 'timeCta' };
+    const ctaId = ctaMap[screenId];
+    if (ctaId) {
+      const cta = document.getElementById(ctaId);
+      cta.classList.remove('cta-disabled');
+      cta.classList.add('cta-primary');
+    }
+  }
+
+  function selectGoal(el) {
+    const group = document.getElementById('goalGroup');
+    group.querySelectorAll('.bubble').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+
+    selectedCoach = el.getAttribute('data-coach');
+    selectedGoal = el.getAttribute('data-goal');
+
+    const cta = document.getElementById('goalCta');
+    cta.classList.remove('cta-disabled');
+    cta.classList.add('cta-primary');
+  }
+
+  // ── Name input ──
+  function onNameInput() {
+    const val = document.getElementById('nameInput').value.trim();
+    const cta = document.getElementById('nameCta');
+    if (val.length >= 2) {
+      cta.classList.remove('cta-disabled');
+      cta.classList.add('cta-primary');
+    } else {
+      cta.classList.remove('cta-primary');
+      cta.classList.add('cta-disabled');
+    }
+  }
+
+  // ── Restart ──
+  function restart() {
+    // Reset all selections
+    selectedCoach = null;
+    selectedGoal = null;
+    document.getElementById('nameInput').value = '';
+    document.getElementById('nameCta').className = 'cta cta-disabled';
+    document.getElementById('whoCta').className = 'cta cta-disabled';
+    document.getElementById('goalCta').className = 'cta cta-disabled';
+    document.getElementById('timeCta').className = 'cta cta-disabled';
+
+    document.querySelectorAll('.bubble.selected').forEach(b => b.classList.remove('selected'));
+
+    goTo('s-splash');
+    setTimeout(() => {
+      if (currentScreen === 's-splash') goTo('s-signin');
+    }, 3000);
+  }
+
+  // ── View Toggle ──
+  function toggleView() {
+    showingLogicBoard = !showingLogicBoard;
+    document.getElementById('logicBoard').classList.toggle('visible', showingLogicBoard);
+    document.getElementById('protoApp').style.display = showingLogicBoard ? 'none' : 'flex';
+    document.getElementById('viewToggle').textContent = showingLogicBoard ? '📱 Prototype' : '⊞ Logic Board';
+  }
+
+  document.getElementById('viewToggle').addEventListener('click', toggleView);
+</script>
+
+</body>
+</html>
