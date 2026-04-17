@@ -12,6 +12,7 @@
 │   ├── index.html      # основна гра
 │   └── assets/
 └── docs/
+    ├── onboarding-v015/ # BRAYN v0.15 onboarding wireframe prototype
     └── wheel-of-fortune-brayn/
 ```
 
@@ -21,6 +22,7 @@
 |------|-------------|-----------|
 | `/` | редирект на основну гру | [Відкрити](https://olehhebel.github.io/BRAYN/) |
 | `/BRAYN/` | BRAYN Digger | [Запустити](https://olehhebel.github.io/BRAYN/BRAYN/) |
+| `/onboarding-v015/` | BRAYN v0.15 Onboarding Wireframe | [Запустити](https://olehhebel.github.io/BRAYN/onboarding-v015/) |
 | `/wheel-of-fortune-brayn/` | архівний wheel prototype з `docs/` | [Запустити](https://olehhebel.github.io/BRAYN/wheel-of-fortune-brayn/) |
 
 ## Нотатки
