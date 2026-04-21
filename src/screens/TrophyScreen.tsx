@@ -6,7 +6,7 @@ import styles from './TrophyScreen.module.css';
 export default function TrophyScreen() {
   const navigate = useNavigate();
   return (
-    <ScreenWrapper center>
+    <ScreenWrapper center onboarding>
       <div className={styles.content}>
         <div className={styles.trophyWrap}>
           <div className={styles.glow} />

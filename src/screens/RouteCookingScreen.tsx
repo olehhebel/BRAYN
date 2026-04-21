@@ -10,7 +10,7 @@ export default function RouteCookingScreen() {
     return () => clearTimeout(t);
   }, [navigate]);
   return (
-    <ScreenWrapper center>
+    <ScreenWrapper center onboarding>
       <div className={styles.content}>
         <div className={styles.ring} />
         <div className={styles.innerRing} />

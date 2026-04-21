@@ -7,7 +7,7 @@ export default function NotificationsScreen() {
   const navigate = useNavigate();
   const go = () => navigate('/cooking');
   return (
-    <ScreenWrapper center>
+    <ScreenWrapper center onboarding>
       <div className={styles.content}>
         <div className={styles.bellWrap}>
           <div className={styles.glow} />

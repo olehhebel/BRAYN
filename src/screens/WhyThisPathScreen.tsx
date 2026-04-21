@@ -27,7 +27,7 @@ export default function WhyThisPathScreen() {
   ];
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/your-way" label="WHY THIS PATH" coachColor={color} />
       <div className={styles.body}>
         <div className={styles.coachBadge} style={{ background: color + '15', borderColor: color + '44' }}>

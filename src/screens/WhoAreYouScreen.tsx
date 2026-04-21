@@ -20,7 +20,7 @@ export default function WhoAreYouScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/name" step="Step 2 of 6" />
       <ProgressBar value={33} />
       <div className={styles.body}>

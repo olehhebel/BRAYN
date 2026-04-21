@@ -7,6 +7,7 @@ export const WHO_OPTIONS = [
   "I feel stuck in my current role",
   "I'm changing direction",
   "I'm building something of my own",
+  "Other",
 ];
 
 export const GOAL_OPTIONS = [
@@ -16,6 +17,7 @@ export const GOAL_OPTIONS = [
   "Make a career pivot",
   "Communicate with more confidence",
   "Turn ideas into action",
+  "Other",
 ];
 
 export const TIME_OPTIONS = [

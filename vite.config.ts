@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/BRAYN/',
   build: {
-    outDir: '.',
-    emptyOutDir: false,
+    outDir: 'docs/BRAYN',
+    emptyOutDir: true,
   },
 })

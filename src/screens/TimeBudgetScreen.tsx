@@ -21,7 +21,7 @@ export default function TimeBudgetScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/goal" step="Step 4 of 6" />
       <ProgressBar value={66} />
       <div className={styles.body}>

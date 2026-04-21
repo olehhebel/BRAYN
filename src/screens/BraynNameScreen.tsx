@@ -18,7 +18,7 @@ export default function BraynNameScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/signin" step="Step 1 of 6" />
       <ProgressBar value={16} />
       <div className={styles.body}>

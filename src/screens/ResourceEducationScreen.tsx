@@ -15,7 +15,7 @@ const RESOURCES = [
 export default function ResourceEducationScreen() {
   const navigate = useNavigate();
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/reward" step="Step 6 of 6" />
       <ProgressBar value={100} />
       <div className={styles.body}>
