@@ -7,6 +7,7 @@
   --kayra: #00DA30;
   --orra: #00FFFF;
   --maverick: #FE6305;
+  --senzor: #FF1296;
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255,255,255,0.6);
   --text-tertiary: rgba(255,255,255,0.35);
@@ -159,3 +160,29 @@ html, body {
 }
 
 .fade-in { animation: fadeIn 0.5s ease forwards; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-7px) scale(1.02); }
+}
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  100% { opacity: 0; transform: scale(0) rotate(360deg); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(6px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(6px) rotate(-360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}

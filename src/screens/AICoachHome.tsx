@@ -8,18 +8,13 @@ export default function AICoachHome() {
   const rd = routeData || { coach: 'Kayra', color: '#00DA30', focus: 'Clarifying your next best route' }
   const coachEmoji = rd.coach === 'Orra' ? '🌊' : rd.coach === 'Maverick' ? '🔥' : '🌿'
   const [isListening, setIsListening] = useState(false)
-
-  const sessionModes = [
-    { icon: '🎙️', label: 'VOICE SESSION', desc: 'Talk to your coach live', active: true },
-    { icon: '💬', label: 'TEXT SESSION', desc: 'Type your responses', active: true },
-    { icon: '🧭', label: 'GUIDED BOOST', desc: 'Structured 5-min focus', active: true },
-  ]
+  const [textInput, setTextInput] = useState('')
 
   return (
     <div className="screen screen-dark fade-in">
       <div className="screen-label">BRAYN AI · COACH HOME</div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
         <div style={{
           width: 64, height: 64, borderRadius: '50%',
           background: `radial-gradient(circle, ${rd.color}44, ${rd.color}11)`,
@@ -49,39 +44,83 @@ export default function AICoachHome() {
         <div style={{ marginTop: 10, fontSize: 12, color: `${rd.color}aa` }}>— {rd.coach}</div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-        {sessionModes.map(mode => (
-          <div key={mode.label} style={{
-            background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
-          }} onClick={() => setIsListening(!isListening)}>
-            <div style={{ fontSize: 26, flexShrink: 0 }}>{mode.icon}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', color: '#fff' }}>{mode.label}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{mode.desc}</div>
-            </div>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: `${rd.color}22`, border: `1px solid ${rd.color}55`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16,
-            }}>›</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 16 }}>
+      {/* Voice input — primary, large prominent area */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>VOICE INPUT</div>
         <button
-          className="cta-btn"
           onClick={() => setIsListening(l => !l)}
-          style={{ background: isListening ? '#FE6305' : '#D5F20E' }}
+          style={{
+            width: '100%', borderRadius: 18,
+            background: isListening ? 'rgba(254,99,5,0.15)' : `${rd.color}18`,
+            border: isListening ? '2px solid #FE6305' : `2px solid ${rd.color}55`,
+            padding: '20px 24px',
+            display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
         >
-          {isListening ? '⏹ STOP SESSION' : '🎙️ START VOICE SESSION'}
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: isListening ? '#FE630533' : `${rd.color}22`,
+            border: isListening ? '2px solid #FE6305' : `1.5px solid ${rd.color}66`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 26, flexShrink: 0,
+            boxShadow: isListening ? '0 0 30px #FE630555' : `0 0 20px ${rd.color}33`,
+            animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none',
+          }}>🎙️</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: isListening ? '#FE6305' : '#fff', letterSpacing: '0.06em' }}>
+              {isListening ? '⏹ STOP LISTENING' : 'START VOICE SESSION'}
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
+              {isListening ? 'Tap to stop · Recording...' : 'Talk to your coach live'}
+            </div>
+          </div>
         </button>
       </div>
 
-      <div className="cta-area" style={{ paddingTop: 12 }}>
+      {/* Text input — distinct secondary area */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.35)', marginBottom: 8 }}>TEXT INPUT</div>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)', borderRadius: 16,
+          border: '1px solid rgba(255,255,255,0.12)',
+          padding: '14px 16px',
+          display: 'flex', alignItems: 'flex-end', gap: 10,
+        }}>
+          <textarea
+            value={textInput}
+            onChange={e => setTextInput(e.target.value)}
+            placeholder={`Message ${rd.coach}...`}
+            rows={2}
+            style={{
+              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+              color: '#fff', fontSize: 14, resize: 'none', lineHeight: 1.5,
+              fontFamily: 'inherit',
+            }}
+          />
+          <button
+            onClick={() => setTextInput('')}
+            style={{
+              width: 38, height: 38, borderRadius: '50%',
+              background: textInput.trim() ? rd.color : 'rgba(255,255,255,0.1)',
+              border: 'none', cursor: 'pointer', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, fontWeight: 700,
+              color: textInput.trim() ? '#151515' : 'rgba(255,255,255,0.3)',
+              transition: 'all 0.2s',
+            }}
+          >›</button>
+        </div>
+      </div>
+
+      <div className="cta-area" style={{ paddingTop: 16, gap: 10 }}>
+        <button
+          className="secondary-btn"
+          style={{ borderColor: '#D5F20E55', color: '#D5F20E', fontSize: 13 }}
+          onClick={() => navigate('/galaxy-all')}
+        >
+          🌌 EXIT TO GALAXY
+        </button>
         <button className="secondary-btn" onClick={() => navigate('/home')}>
           BACK TO HOME
         </button>
