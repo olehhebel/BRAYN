@@ -48,7 +48,7 @@ export default function GenesisBranchRoom() {
       </div>
 
       <div className="cta-area">
-        <button className="cta-btn" onClick={() => navigate('/genesis-module')}>START</button>
+        <button className="cta-btn" onClick={() => navigate('/unlock-neurons')}>START</button>
       </div>
     </div>
   )

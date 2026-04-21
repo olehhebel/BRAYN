@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - copilot/create-mobile-first-brayn-prototype-again
+      - copilot/deploy-current-brayn-prototype
 
 permissions:
   contents: read

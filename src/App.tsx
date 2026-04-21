@@ -28,6 +28,7 @@ import AIVisualGenerating from './screens/AIVisualGenerating'
 import AIVisualProjection from './screens/AIVisualProjection'
 import GenesisGalaxyEntry from './screens/GenesisGalaxyEntry'
 import GenesisBranchRoom from './screens/GenesisBranchRoom'
+import UnlockNeurons from './screens/UnlockNeurons'
 import GenesisModuleHighlight from './screens/GenesisModuleHighlight'
 import GenesisStartConfirm from './screens/GenesisStartConfirm'
 import GenesisLiveEntry from './screens/GenesisLiveEntry'
@@ -49,6 +50,7 @@ import AIEntryTeaser from './screens/AIEntryTeaser'
 import UnlockAI from './screens/UnlockAI'
 import AIPackageSelect from './screens/AIPackageSelect'
 import AICoachHome from './screens/AICoachHome'
+import GalaxyAllBranches from './screens/GalaxyAllBranches'
 import Home from './screens/Home'
 import DailyBrief from './screens/DailyBrief'
 import SessionFocus from './screens/SessionFocus'
@@ -92,6 +94,7 @@ function App() {
       {/* Block 5: Genesis */}
       <Route path="/genesis-galaxy" element={<GenesisGalaxyEntry />} />
       <Route path="/genesis-branch" element={<GenesisBranchRoom />} />
+      <Route path="/unlock-neurons" element={<UnlockNeurons />} />
       <Route path="/genesis-module" element={<GenesisModuleHighlight />} />
       <Route path="/genesis-confirm" element={<GenesisStartConfirm />} />
       <Route path="/genesis-live" element={<GenesisLiveEntry />} />
@@ -114,6 +117,7 @@ function App() {
       <Route path="/unlock-ai" element={<UnlockAI />} />
       <Route path="/ai-package" element={<AIPackageSelect />} />
       <Route path="/ai-coach-home" element={<AICoachHome />} />
+      <Route path="/galaxy-all" element={<GalaxyAllBranches />} />
       {/* Home / Dashboard */}
       <Route path="/home" element={<Home />} />
       <Route path="/daily-brief" element={<DailyBrief />} />
