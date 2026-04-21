@@ -1,0 +1,39 @@
+.bubble {
+  display: flex;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.bubble:active {
+  transform: scale(0.97);
+}
+
+.dot {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  margin-right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.check {
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+}
