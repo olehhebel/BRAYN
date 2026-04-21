@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppContext } from '../context/AppContext'
 
 const MESSAGES = [
   'Scanning your career signals...',
@@ -11,7 +10,6 @@ const MESSAGES = [
 
 export default function CareerRadarProcessing1() {
   const navigate = useNavigate()
-  const { routeData: _routeData } = useAppContext()
   useEffect(() => {
     const t = setTimeout(() => navigate('/career-radar-processing-2'), 3500)
     return () => clearTimeout(t)

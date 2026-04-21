@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { useAppContext } from '../context/AppContext'
 
 export default function GenesisReward() {
   const navigate = useNavigate()
-  const { routeData: _routeData } = useAppContext()
 
   const rewards = [
     { icon: '⚡', amount: '+50', name: 'NEURONS', desc: 'Route calibration bonus' },
