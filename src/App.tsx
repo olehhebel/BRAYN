@@ -43,6 +43,11 @@ import CareerRadarInsights from './screens/CareerRadarInsights'
 import GenesisCoachCompletion from './screens/GenesisCoachCompletion'
 import GenesisReward from './screens/GenesisReward'
 import GenesisArtifact from './screens/GenesisArtifact'
+import Home from './screens/Home'
+import DailyBrief from './screens/DailyBrief'
+import SessionFocus from './screens/SessionFocus'
+import SessionComplete from './screens/SessionComplete'
+import Stash from './screens/Stash'
 
 function App() {
   return (
@@ -91,6 +96,11 @@ function App() {
       <Route path="/genesis-coach-completion" element={<GenesisCoachCompletion />} />
       <Route path="/genesis-reward" element={<GenesisReward />} />
       <Route path="/genesis-artifact" element={<GenesisArtifact />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/daily-brief" element={<DailyBrief />} />
+      <Route path="/session-focus" element={<SessionFocus />} />
+      <Route path="/session-complete" element={<SessionComplete />} />
+      <Route path="/stash" element={<Stash />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
