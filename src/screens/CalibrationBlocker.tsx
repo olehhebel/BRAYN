@@ -21,7 +21,7 @@ export default function CalibrationBlocker() {
 
   return (
     <div className="screen screen-dark fade-in">
-      <div className="screen-label">CALIBRATION · 3 OF 6</div>
+      <div className="screen-label">CALIBRATION · 3 OF 5</div>
       <div style={{
         background: `${rd.color}15`, borderRadius: 16, padding: '14px 18px',
         border: `1px solid ${rd.color}30`, marginBottom: 20,

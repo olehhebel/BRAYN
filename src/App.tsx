@@ -43,6 +43,12 @@ import CareerRadarInsights from './screens/CareerRadarInsights'
 import GenesisCoachCompletion from './screens/GenesisCoachCompletion'
 import GenesisReward from './screens/GenesisReward'
 import GenesisArtifact from './screens/GenesisArtifact'
+import BraynIdIntro from './screens/BraynIdIntro'
+import BraynIdProof from './screens/BraynIdProof'
+import AIEntryTeaser from './screens/AIEntryTeaser'
+import UnlockAI from './screens/UnlockAI'
+import AIPackageSelect from './screens/AIPackageSelect'
+import AICoachHome from './screens/AICoachHome'
 import Home from './screens/Home'
 import DailyBrief from './screens/DailyBrief'
 import SessionFocus from './screens/SessionFocus'
@@ -52,6 +58,7 @@ import Stash from './screens/Stash'
 function App() {
   return (
     <Routes>
+      {/* Block 1: Onboarding */}
       <Route path="/" element={<Splash />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/name" element={<Name />} />
@@ -62,6 +69,7 @@ function App() {
       <Route path="/resources" element={<Resources />} />
       <Route path="/trophy" element={<Trophy />} />
       <Route path="/notifications" element={<Notifications />} />
+      {/* Block 2: Path Reveal */}
       <Route path="/cooking" element={<Cooking />} />
       <Route path="/your-way" element={<YourWay />} />
       <Route path="/why-path" element={<WhyPath />} />
@@ -71,14 +79,17 @@ function App() {
       <Route path="/micro3" element={<Micro3 />} />
       <Route path="/goodies" element={<Goodies />} />
       <Route path="/start-card" element={<StartCard />} />
+      {/* Block 3: Calibration Layer */}
       <Route path="/calibration-coach" element={<CalibrationCoachIntro />} />
       <Route path="/calibration-goal" element={<CalibrationGoalImportance />} />
       <Route path="/calibration-avatar" element={<CalibrationAvatar />} />
       <Route path="/calibration-blocker" element={<CalibrationBlocker />} />
       <Route path="/calibration-support" element={<CalibrationSupport />} />
       <Route path="/calibration-future" element={<CalibrationFutureSelf />} />
+      {/* Block 4: AI Visual */}
       <Route path="/ai-generating" element={<AIVisualGenerating />} />
       <Route path="/ai-projection" element={<AIVisualProjection />} />
+      {/* Block 5: Genesis */}
       <Route path="/genesis-galaxy" element={<GenesisGalaxyEntry />} />
       <Route path="/genesis-branch" element={<GenesisBranchRoom />} />
       <Route path="/genesis-module" element={<GenesisModuleHighlight />} />
@@ -96,6 +107,14 @@ function App() {
       <Route path="/genesis-coach-completion" element={<GenesisCoachCompletion />} />
       <Route path="/genesis-reward" element={<GenesisReward />} />
       <Route path="/genesis-artifact" element={<GenesisArtifact />} />
+      {/* Block 6: Paywall / AI Access Gate */}
+      <Route path="/brayn-id-intro" element={<BraynIdIntro />} />
+      <Route path="/brayn-id-proof" element={<BraynIdProof />} />
+      <Route path="/ai-entry-teaser" element={<AIEntryTeaser />} />
+      <Route path="/unlock-ai" element={<UnlockAI />} />
+      <Route path="/ai-package" element={<AIPackageSelect />} />
+      <Route path="/ai-coach-home" element={<AICoachHome />} />
+      {/* Home / Dashboard */}
       <Route path="/home" element={<Home />} />
       <Route path="/daily-brief" element={<DailyBrief />} />
       <Route path="/session-focus" element={<SessionFocus />} />

@@ -7,7 +7,7 @@ export default function CalibrationAvatar() {
 
   return (
     <div className="screen screen-onboarding fade-in" style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-      <div className="screen-label" style={{ textAlign: 'center' }}>CALIBRATION · 2 OF 6</div>
+      <div className="screen-label" style={{ textAlign: 'center' }}>CALIBRATION · 2 OF 5</div>
       <div style={{
         width: 120, height: 120, borderRadius: '50%',
         background: 'rgba(255,255,255,0.08)', border: '2px dashed rgba(255,255,255,0.25)',

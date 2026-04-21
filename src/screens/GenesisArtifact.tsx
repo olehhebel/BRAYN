@@ -54,7 +54,7 @@ export default function GenesisArtifact() {
       </div>
 
       <div className="cta-area" style={{ width: '100%' }}>
-        <button className="cta-btn" onClick={() => { setGenesisComplete(true); navigate('/home') }}>
+        <button className="cta-btn" onClick={() => { setGenesisComplete(true); navigate('/brayn-id-intro') }}>
           SAVE TO MY STASH
         </button>
       </div>
