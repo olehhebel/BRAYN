@@ -23,7 +23,7 @@ export default function GoalScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar backTo="/who" step="Step 3 of 6" />
       <ProgressBar value={50} />
       <div className={styles.body}>

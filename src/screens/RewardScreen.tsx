@@ -8,7 +8,7 @@ import styles from './RewardScreen.module.css';
 export default function RewardScreen() {
   const navigate = useNavigate();
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar step="Step 5 of 6" />
       <ProgressBar value={83} />
       <div className={styles.body}>

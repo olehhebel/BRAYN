@@ -6,7 +6,7 @@ export default function SignInScreen() {
   const navigate = useNavigate();
   const go = () => navigate('/name');
   return (
-    <ScreenWrapper center>
+    <ScreenWrapper center onboarding>
       <div className={styles.content}>
         <div className={styles.glow} />
         <div className={styles.logo}>BRAYN</div>

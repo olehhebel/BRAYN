@@ -23,7 +23,7 @@ export default function YourWayScreen() {
   const coachInitial = coach[0];
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onboarding>
       <Topbar label="YOUR PATH" coachColor={color} />
       <div className={styles.body}>
         <div className={styles.coachHeader}>

@@ -1,6 +1,7 @@
 :root {
   color-scheme: dark;
-  --bg: #0A0B14;
+  --bg: #151515;
+  --bg-onboarding: #0E15AB;
   --bg-card: rgba(255,255,255,0.05);
   --bg-card-strong: rgba(255,255,255,0.08);
   --surface: #13141F;

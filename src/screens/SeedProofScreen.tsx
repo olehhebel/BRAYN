@@ -19,7 +19,7 @@ export default function SeedProofScreen() {
   }
 
   return (
-    <ScreenWrapper center>
+    <ScreenWrapper center onboarding>
       <div className={styles.content}>
         <div className={styles.title}>BRAYN START CARD</div>
         <div className={styles.card} style={{ borderColor: color, boxShadow: `0 0 40px ${color}22` }}>
