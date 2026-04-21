@@ -3,10 +3,8 @@ import { useAppContext } from '../context/AppContext'
 
 export default function YourWay() {
   const navigate = useNavigate()
-  const { goal, routeData, userName } = useAppContext()
+  const { goal, routeData } = useAppContext()
   const rd = routeData || { coach: 'Kayra', color: '#00DA30', primaryBranch: 'Career Strategy & Workforce Readiness', supportBranch: 'Thinking, Decisions & Cognitive Agility', focus: 'Clarifying your next best route', proof: 'Role Target Card' }
-
-  void userName
 
   return (
     <div className="screen screen-onboarding fade-in" style={{ overflowY: 'auto' }}>
