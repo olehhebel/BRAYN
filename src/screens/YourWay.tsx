@@ -32,7 +32,7 @@ export default function YourWay() {
             boxShadow: `0 0 20px ${rd.color}55`,
           }}>{coachEmoji}</div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: rd.color, letterSpacing: '0.08em' }}>KAYRA</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: rd.color, letterSpacing: '0.08em' }}>{rd.coach?.toUpperCase() || 'KAYRA'}</div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', marginTop: 2, letterSpacing: '0.1em' }}>PRIMARY COACH</div>
           </div>
         </div>

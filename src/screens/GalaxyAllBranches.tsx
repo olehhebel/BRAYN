@@ -4,7 +4,6 @@ import { useAppContext } from '../context/AppContext'
 const BRANCHES = [
   {
     name: 'Career Strategy & Workforce Readiness',
-    shortName: 'CAREER\nSTRATEGY',
     coach: 'KAYRA',
     color: '#00DA30',
     emoji: '🌿',
@@ -12,7 +11,6 @@ const BRANCHES = [
   },
   {
     name: 'Impactful Communication & Influence',
-    shortName: 'COMMUNICATION\n& INFLUENCE',
     coach: 'ORRA',
     color: '#00FFFF',
     emoji: '🌊',
@@ -20,7 +18,6 @@ const BRANCHES = [
   },
   {
     name: 'Thinking, Decisions & Cognitive Agility',
-    shortName: 'COGNITIVE\nAGILITY',
     coach: 'SENZOR',
     color: '#FF1296',
     emoji: '🔬',
@@ -28,7 +25,6 @@ const BRANCHES = [
   },
   {
     name: 'Entrepreneurship, Execution & Opportunity Design',
-    shortName: 'ENTREPRENEURSHIP\n& EXECUTION',
     coach: 'MAVERICK',
     color: '#FE6305',
     emoji: '🔥',
