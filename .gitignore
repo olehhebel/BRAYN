@@ -1,2 +1,18 @@
-node_modules/
-dist/
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+
+# Logs and temporary files
+*.log
+.tmp/
+tmp/
