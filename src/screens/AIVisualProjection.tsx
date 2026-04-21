@@ -57,7 +57,7 @@ export default function AIVisualProjection() {
       </div>
 
       <div className="cta-area">
-        <button className="cta-btn" onClick={() => navigate('/')}>
+        <button className="cta-btn" onClick={() => navigate('/genesis-galaxy')}>
           START MY BRAYN JOURNEY
         </button>
       </div>

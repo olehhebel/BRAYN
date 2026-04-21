@@ -21,6 +21,7 @@ export interface AppState {
   mainBlocker: string
   preferredSupportMode: string
   futureSelfIdentity: string
+  genesisComplete: boolean
 }
 
 interface AppContextType extends AppState {
@@ -34,6 +35,7 @@ interface AppContextType extends AppState {
   setMainBlocker: (v: string) => void
   setPreferredSupportMode: (v: string) => void
   setFutureSelfIdentity: (v: string) => void
+  setGenesisComplete: (v: boolean) => void
 }
 
 export const GOAL_ROUTES: Record<string, RouteData> = {
@@ -50,8 +52,10 @@ const defaultRoute: RouteData = GOAL_ROUTES['Find my direction']
 const AppContext = createContext<AppContextType>({
   userName: '', whoAreYou: '', goal: '', timeBudget: '', routeData: defaultRoute,
   goalImportanceReason: '', avatarProvided: false, mainBlocker: '', preferredSupportMode: '', futureSelfIdentity: '',
+  genesisComplete: false,
   setUserName: () => {}, setWhoAreYou: () => {}, setGoal: () => {}, setTimeBudget: () => {}, setRouteData: () => {},
   setGoalImportanceReason: () => {}, setAvatarProvided: () => {}, setMainBlocker: () => {}, setPreferredSupportMode: () => {}, setFutureSelfIdentity: () => {},
+  setGenesisComplete: () => {},
 })
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -65,13 +69,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [mainBlocker, setMainBlocker] = useState('')
   const [preferredSupportMode, setPreferredSupportMode] = useState('')
   const [futureSelfIdentity, setFutureSelfIdentity] = useState('')
+  const [genesisComplete, setGenesisComplete] = useState(false)
 
   return (
     <AppContext.Provider value={{
       userName, whoAreYou, goal, timeBudget, routeData,
       goalImportanceReason, avatarProvided, mainBlocker, preferredSupportMode, futureSelfIdentity,
+      genesisComplete,
       setUserName, setWhoAreYou, setGoal, setTimeBudget, setRouteData,
       setGoalImportanceReason, setAvatarProvided, setMainBlocker, setPreferredSupportMode, setFutureSelfIdentity,
+      setGenesisComplete,
     }}>
       {children}
     </AppContext.Provider>

@@ -26,6 +26,23 @@ import CalibrationSupport from './screens/CalibrationSupport'
 import CalibrationFutureSelf from './screens/CalibrationFutureSelf'
 import AIVisualGenerating from './screens/AIVisualGenerating'
 import AIVisualProjection from './screens/AIVisualProjection'
+import GenesisGalaxyEntry from './screens/GenesisGalaxyEntry'
+import GenesisBranchRoom from './screens/GenesisBranchRoom'
+import GenesisModuleHighlight from './screens/GenesisModuleHighlight'
+import GenesisStartConfirm from './screens/GenesisStartConfirm'
+import GenesisLiveEntry from './screens/GenesisLiveEntry'
+import GenesisBriefing from './screens/GenesisBriefing'
+import GenesisQuestion1 from './screens/GenesisQuestion1'
+import GenesisQuestion2 from './screens/GenesisQuestion2'
+import GenesisToolTransition from './screens/GenesisToolTransition'
+import CareerRadarHero from './screens/CareerRadarHero'
+import CareerRadarSetup from './screens/CareerRadarSetup'
+import CareerRadarProcessing1 from './screens/CareerRadarProcessing1'
+import CareerRadarProcessing2 from './screens/CareerRadarProcessing2'
+import CareerRadarInsights from './screens/CareerRadarInsights'
+import GenesisCoachCompletion from './screens/GenesisCoachCompletion'
+import GenesisReward from './screens/GenesisReward'
+import GenesisArtifact from './screens/GenesisArtifact'
 
 function App() {
   return (
@@ -57,6 +74,23 @@ function App() {
       <Route path="/calibration-future" element={<CalibrationFutureSelf />} />
       <Route path="/ai-generating" element={<AIVisualGenerating />} />
       <Route path="/ai-projection" element={<AIVisualProjection />} />
+      <Route path="/genesis-galaxy" element={<GenesisGalaxyEntry />} />
+      <Route path="/genesis-branch" element={<GenesisBranchRoom />} />
+      <Route path="/genesis-module" element={<GenesisModuleHighlight />} />
+      <Route path="/genesis-confirm" element={<GenesisStartConfirm />} />
+      <Route path="/genesis-live" element={<GenesisLiveEntry />} />
+      <Route path="/genesis-briefing" element={<GenesisBriefing />} />
+      <Route path="/genesis-q1" element={<GenesisQuestion1 />} />
+      <Route path="/genesis-q2" element={<GenesisQuestion2 />} />
+      <Route path="/genesis-tool-transition" element={<GenesisToolTransition />} />
+      <Route path="/career-radar-hero" element={<CareerRadarHero />} />
+      <Route path="/career-radar-setup" element={<CareerRadarSetup />} />
+      <Route path="/career-radar-processing-1" element={<CareerRadarProcessing1 />} />
+      <Route path="/career-radar-processing-2" element={<CareerRadarProcessing2 />} />
+      <Route path="/career-radar-insights" element={<CareerRadarInsights />} />
+      <Route path="/genesis-coach-completion" element={<GenesisCoachCompletion />} />
+      <Route path="/genesis-reward" element={<GenesisReward />} />
+      <Route path="/genesis-artifact" element={<GenesisArtifact />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
