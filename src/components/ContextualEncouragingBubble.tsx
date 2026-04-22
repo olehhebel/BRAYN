@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 const INTERACTIVE_BUBBLES: Record<string, string> = {
@@ -21,24 +21,25 @@ const BUBBLE_DURATION_MS = 2000
 
 export default function ContextualEncouragingBubble() {
   const { pathname } = useLocation()
-  const message = useMemo(() => INTERACTIVE_BUBBLES[pathname] ?? null, [pathname])
-  const [visible, setVisible] = useState(Boolean(message))
+  const message = INTERACTIVE_BUBBLES[pathname]
+
+  if (!message) return null
+
+  return <TimedBubble key={pathname} message={message} />
+}
+
+function TimedBubble({ message }: { message: string }) {
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    if (!message) {
-      setVisible(false)
-      return
-    }
-
-    setVisible(true)
     const timeoutId = window.setTimeout(() => setVisible(false), BUBBLE_DURATION_MS)
     return () => window.clearTimeout(timeoutId)
-  }, [message, pathname])
+  }, [])
 
-  if (!message || !visible) return null
+  if (!visible) return null
 
   return (
-    <div className="encouraging-bubble-shell" aria-hidden="true">
+    <div className="encouraging-bubble-shell">
       <div className="encouraging-bubble" role="status" aria-live="polite">
         {message}
       </div>
