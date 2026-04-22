@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import ContextualEncouragingBubble from './components/ContextualEncouragingBubble'
 import Splash from './screens/Splash'
 import SignIn from './screens/SignIn'
 import Name from './screens/Name'
@@ -59,73 +60,76 @@ import Stash from './screens/Stash'
 
 function App() {
   return (
-    <Routes>
-      {/* Block 1: Onboarding */}
-      <Route path="/" element={<Splash />} />
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/name" element={<Name />} />
-      <Route path="/who" element={<Who />} />
-      <Route path="/goal" element={<Goal />} />
-      <Route path="/time" element={<Time />} />
-      <Route path="/reward" element={<Reward />} />
-      <Route path="/resources" element={<Resources />} />
-      <Route path="/trophy" element={<Trophy />} />
-      <Route path="/notifications" element={<Notifications />} />
-      {/* Block 2: Path Reveal */}
-      <Route path="/cooking" element={<Cooking />} />
-      <Route path="/your-way" element={<YourWay />} />
-      <Route path="/why-path" element={<WhyPath />} />
-      <Route path="/first-task" element={<FirstTask />} />
-      <Route path="/micro1" element={<Micro1 />} />
-      <Route path="/micro2" element={<Micro2 />} />
-      <Route path="/micro3" element={<Micro3 />} />
-      <Route path="/goodies" element={<Goodies />} />
-      <Route path="/start-card" element={<StartCard />} />
-      {/* Block 3: Calibration Layer */}
-      <Route path="/calibration-coach" element={<CalibrationCoachIntro />} />
-      <Route path="/calibration-goal" element={<CalibrationGoalImportance />} />
-      <Route path="/calibration-avatar" element={<CalibrationAvatar />} />
-      <Route path="/calibration-blocker" element={<CalibrationBlocker />} />
-      <Route path="/calibration-support" element={<CalibrationSupport />} />
-      <Route path="/calibration-future" element={<CalibrationFutureSelf />} />
-      {/* Block 4: AI Visual */}
-      <Route path="/ai-generating" element={<AIVisualGenerating />} />
-      <Route path="/ai-projection" element={<AIVisualProjection />} />
-      {/* Block 5: Genesis */}
-      <Route path="/genesis-galaxy" element={<GenesisGalaxyEntry />} />
-      <Route path="/genesis-branch" element={<GenesisBranchRoom />} />
-      <Route path="/unlock-neurons" element={<UnlockNeurons />} />
-      <Route path="/genesis-module" element={<GenesisModuleHighlight />} />
-      <Route path="/genesis-confirm" element={<GenesisStartConfirm />} />
-      <Route path="/genesis-live" element={<GenesisLiveEntry />} />
-      <Route path="/genesis-briefing" element={<GenesisBriefing />} />
-      <Route path="/genesis-q1" element={<GenesisQuestion1 />} />
-      <Route path="/genesis-q2" element={<GenesisQuestion2 />} />
-      <Route path="/genesis-tool-transition" element={<GenesisToolTransition />} />
-      <Route path="/career-radar-hero" element={<CareerRadarHero />} />
-      <Route path="/career-radar-setup" element={<CareerRadarSetup />} />
-      <Route path="/career-radar-processing-1" element={<CareerRadarProcessing1 />} />
-      <Route path="/career-radar-processing-2" element={<CareerRadarProcessing2 />} />
-      <Route path="/career-radar-insights" element={<CareerRadarInsights />} />
-      <Route path="/genesis-coach-completion" element={<GenesisCoachCompletion />} />
-      <Route path="/genesis-reward" element={<GenesisReward />} />
-      <Route path="/genesis-artifact" element={<GenesisArtifact />} />
-      {/* Block 6: Paywall / AI Access Gate */}
-      <Route path="/brayn-id-intro" element={<BraynIdIntro />} />
-      <Route path="/brayn-id-proof" element={<BraynIdProof />} />
-      <Route path="/ai-entry-teaser" element={<AIEntryTeaser />} />
-      <Route path="/unlock-ai" element={<UnlockAI />} />
-      <Route path="/ai-package" element={<AIPackageSelect />} />
-      <Route path="/ai-coach-home" element={<AICoachHome />} />
-      <Route path="/galaxy-all" element={<GalaxyAllBranches />} />
-      {/* Home / Dashboard */}
-      <Route path="/home" element={<Home />} />
-      <Route path="/daily-brief" element={<DailyBrief />} />
-      <Route path="/session-focus" element={<SessionFocus />} />
-      <Route path="/session-complete" element={<SessionComplete />} />
-      <Route path="/stash" element={<Stash />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <ContextualEncouragingBubble />
+      <Routes>
+        {/* Block 1: Onboarding */}
+        <Route path="/" element={<Splash />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/name" element={<Name />} />
+        <Route path="/who" element={<Who />} />
+        <Route path="/goal" element={<Goal />} />
+        <Route path="/time" element={<Time />} />
+        <Route path="/reward" element={<Reward />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/trophy" element={<Trophy />} />
+        <Route path="/notifications" element={<Notifications />} />
+        {/* Block 2: Path Reveal */}
+        <Route path="/cooking" element={<Cooking />} />
+        <Route path="/your-way" element={<YourWay />} />
+        <Route path="/why-path" element={<WhyPath />} />
+        <Route path="/first-task" element={<FirstTask />} />
+        <Route path="/micro1" element={<Micro1 />} />
+        <Route path="/micro2" element={<Micro2 />} />
+        <Route path="/micro3" element={<Micro3 />} />
+        <Route path="/goodies" element={<Goodies />} />
+        <Route path="/start-card" element={<StartCard />} />
+        {/* Block 3: Calibration Layer */}
+        <Route path="/calibration-coach" element={<CalibrationCoachIntro />} />
+        <Route path="/calibration-goal" element={<CalibrationGoalImportance />} />
+        <Route path="/calibration-avatar" element={<CalibrationAvatar />} />
+        <Route path="/calibration-blocker" element={<CalibrationBlocker />} />
+        <Route path="/calibration-support" element={<CalibrationSupport />} />
+        <Route path="/calibration-future" element={<CalibrationFutureSelf />} />
+        {/* Block 4: AI Visual */}
+        <Route path="/ai-generating" element={<AIVisualGenerating />} />
+        <Route path="/ai-projection" element={<AIVisualProjection />} />
+        {/* Block 5: Genesis */}
+        <Route path="/genesis-galaxy" element={<GenesisGalaxyEntry />} />
+        <Route path="/genesis-branch" element={<GenesisBranchRoom />} />
+        <Route path="/unlock-neurons" element={<UnlockNeurons />} />
+        <Route path="/genesis-module" element={<GenesisModuleHighlight />} />
+        <Route path="/genesis-confirm" element={<GenesisStartConfirm />} />
+        <Route path="/genesis-live" element={<GenesisLiveEntry />} />
+        <Route path="/genesis-briefing" element={<GenesisBriefing />} />
+        <Route path="/genesis-q1" element={<GenesisQuestion1 />} />
+        <Route path="/genesis-q2" element={<GenesisQuestion2 />} />
+        <Route path="/genesis-tool-transition" element={<GenesisToolTransition />} />
+        <Route path="/career-radar-hero" element={<CareerRadarHero />} />
+        <Route path="/career-radar-setup" element={<CareerRadarSetup />} />
+        <Route path="/career-radar-processing-1" element={<CareerRadarProcessing1 />} />
+        <Route path="/career-radar-processing-2" element={<CareerRadarProcessing2 />} />
+        <Route path="/career-radar-insights" element={<CareerRadarInsights />} />
+        <Route path="/genesis-coach-completion" element={<GenesisCoachCompletion />} />
+        <Route path="/genesis-reward" element={<GenesisReward />} />
+        <Route path="/genesis-artifact" element={<GenesisArtifact />} />
+        {/* Block 6: Paywall / AI Access Gate */}
+        <Route path="/brayn-id-intro" element={<BraynIdIntro />} />
+        <Route path="/brayn-id-proof" element={<BraynIdProof />} />
+        <Route path="/ai-entry-teaser" element={<AIEntryTeaser />} />
+        <Route path="/unlock-ai" element={<UnlockAI />} />
+        <Route path="/ai-package" element={<AIPackageSelect />} />
+        <Route path="/ai-coach-home" element={<AICoachHome />} />
+        <Route path="/galaxy-all" element={<GalaxyAllBranches />} />
+        {/* Home / Dashboard */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/daily-brief" element={<DailyBrief />} />
+        <Route path="/session-focus" element={<SessionFocus />} />
+        <Route path="/session-complete" element={<SessionComplete />} />
+        <Route path="/stash" element={<Stash />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   )
 }
 

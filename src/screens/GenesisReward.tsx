@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 export default function GenesisReward() {
   const navigate = useNavigate()
@@ -38,12 +38,13 @@ export default function GenesisReward() {
         </div>
       </div>
 
-      <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-reward-payout.png" shareTitle="My BRAYN Reward Payout 🏅" />
-        <button className="cta-btn" onClick={() => navigate('/genesis-artifact')}>
-          UNLOCK YOUR ARTIFACT
-        </button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-reward-payout.png"
+        shareTitle="My BRAYN Reward Payout 🏅"
+        primaryLabel="UNLOCK YOUR ARTIFACT"
+        onPrimaryClick={() => navigate('/genesis-artifact')}
+      />
     </div>
   )
 }

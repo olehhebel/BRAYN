@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 export default function GenesisCoachCompletion() {
   const navigate = useNavigate()
@@ -47,12 +47,13 @@ export default function GenesisCoachCompletion() {
         </div>
       </div>
 
-      <div className="cta-area">
-        <ResultShareBar captureRef={captureRef} filename="brayn-milestone.png" shareTitle="My BRAYN Milestone 🎯" />
-        <button className="cta-btn" onClick={() => navigate('/genesis-reward')}>
-          COLLECT YOUR REWARD
-        </button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-milestone.png"
+        shareTitle="My BRAYN Milestone 🎯"
+        primaryLabel="COLLECT YOUR REWARD"
+        onPrimaryClick={() => navigate('/genesis-reward')}
+      />
     </div>
   )
 }

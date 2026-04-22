@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 
@@ -5,7 +6,7 @@ export default function StartCard() {
   const navigate = useNavigate()
   const { userName, goal, routeData } = useAppContext()
   const rd = routeData || { coach: 'Kayra', color: '#00DA30' }
-  const id = `BRAYN-${Math.floor(1000 + Math.random() * 9000)}`
+  const [id] = useState(() => `BRAYN-${Math.floor(1000 + Math.random() * 9000)}`)
 
   return (
     <div className="screen screen-onboarding fade-in" style={{ alignItems: 'center', justifyContent: 'center' }}>

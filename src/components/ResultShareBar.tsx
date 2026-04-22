@@ -59,23 +59,23 @@ export default function ResultShareBar({
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: 10,
-      width: '100%',
-    }}>
+    <div className="result-share-row">
       <button
+        type="button"
         onClick={handleDownload}
         disabled={!!busy}
         aria-label="Download image"
+        className="secondary-btn result-share-action"
         style={btnStyle(busy === 'download')}
       >
         {busy === 'download' ? '…' : '⬇ DOWNLOAD'}
       </button>
       <button
+        type="button"
         onClick={handleShare}
         disabled={!!busy}
         aria-label="Share image"
+        className="secondary-btn result-share-action"
         style={btnStyle(busy === 'share')}
       >
         {busy === 'share' ? '…' : '↑ SHARE'}
@@ -87,16 +87,14 @@ export default function ResultShareBar({
 function btnStyle(active: boolean): React.CSSProperties {
   return {
     flex: 1,
-    background: 'transparent',
-    color: active ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.55)',
-    border: '1px solid rgba(255,255,255,0.18)',
-    borderRadius: 100,
+    width: 'auto',
+    color: active ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.72)',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: '13px 8px',
     fontSize: 12,
     fontWeight: 700,
     letterSpacing: '0.06em',
     cursor: active ? 'not-allowed' : 'pointer',
-    transition: 'opacity 0.2s',
-    WebkitTapHighlightColor: 'transparent',
+    opacity: active ? 0.7 : 1,
   }
 }
