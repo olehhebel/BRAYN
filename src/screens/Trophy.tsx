@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 const SPARKS = [
   { top: '8%', left: '12%', size: 6, delay: '0s', dur: '2.2s' },
@@ -91,10 +91,13 @@ export default function Trophy() {
         </div>
       </div>
 
-      <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-seed-proof.png" shareTitle="My BRAYN Seed Proof 🏆" />
-        <button className="cta-btn" onClick={() => navigate('/notifications')}>CLAIM IT</button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-seed-proof.png"
+        shareTitle="My BRAYN Seed Proof 🏆"
+        primaryLabel="CLAIM IT"
+        onPrimaryClick={() => navigate('/notifications')}
+      />
     </div>
   )
 }

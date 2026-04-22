@@ -1,7 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 const SPARKS = [
   { top: '6%', left: '8%', size: 6, delay: '0s', dur: '2.2s' },
@@ -17,7 +17,7 @@ export default function GenesisArtifact() {
   const navigate = useNavigate()
   const { routeData, userName, goal, setGenesisComplete } = useAppContext()
   const rd = routeData || { coach: 'Kayra', color: '#00DA30', proof: 'Role Target Card', focus: 'Clarifying your next best route' }
-  const artifactId = `BRN-${Math.floor(10000 + Math.random() * 90000)}`
+  const [artifactId] = useState(() => `BRN-${Math.floor(10000 + Math.random() * 90000)}`)
   const captureRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -100,12 +100,13 @@ export default function GenesisArtifact() {
         </div>
       </div>
 
-      <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-artifact.png" shareTitle="My BRAYN First Artifact 📄" />
-        <button className="cta-btn" onClick={() => { setGenesisComplete(true); navigate('/brayn-id-intro') }}>
-          SAVE TO MY STASH
-        </button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-artifact.png"
+        shareTitle="My BRAYN First Artifact 📄"
+        primaryLabel="SAVE TO MY STASH"
+        onPrimaryClick={() => { setGenesisComplete(true); navigate('/brayn-id-intro') }}
+      />
     </div>
   )
 }

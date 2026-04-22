@@ -1,13 +1,13 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 export default function BraynIdProof() {
   const navigate = useNavigate()
   const { routeData, userName, goal } = useAppContext()
   const rd = routeData || { coach: 'Kayra', color: '#00DA30', proof: 'Role Target Card', primaryBranch: 'Career Strategy & Workforce Readiness' }
-  const idNumber = `BRAYN-${Math.floor(10000 + Math.random() * 90000)}`
+  const [idNumber] = useState(() => `BRAYN-${Math.floor(10000 + Math.random() * 90000)}`)
   const captureRef = useRef<HTMLDivElement>(null)
 
   const stats = [
@@ -165,12 +165,13 @@ export default function BraynIdProof() {
         </div>
       </div>
 
-      <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-id-proof.png" shareTitle="My BRAYN ID Proof 🌿" />
-        <button className="cta-btn" onClick={() => navigate('/ai-entry-teaser')}>
-          {"SEE WHAT'S NEXT"}
-        </button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-id-proof.png"
+        shareTitle="My BRAYN ID Proof 🌿"
+        primaryLabel="SEE WHAT'S NEXT"
+        onPrimaryClick={() => navigate('/ai-entry-teaser')}
+      />
     </div>
   )
 }

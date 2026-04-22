@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import ResultShareBar from '../components/ResultShareBar'
+import ResultActionStack from '../components/ResultActionStack'
 
 export default function SessionComplete() {
   const navigate = useNavigate()
@@ -53,10 +53,13 @@ export default function SessionComplete() {
         </div>
       </div>
 
-      <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-session-complete.png" shareTitle="Session Complete on BRAYN ⚡" />
-        <button className="cta-btn" onClick={() => navigate('/home')}>BACK TO HOME</button>
-      </div>
+      <ResultActionStack
+        captureRef={captureRef}
+        filename="brayn-session-complete.png"
+        shareTitle="Session Complete on BRAYN ⚡"
+        primaryLabel="BACK TO HOME"
+        onPrimaryClick={() => navigate('/home')}
+      />
     </div>
   )
 }
