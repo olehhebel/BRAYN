@@ -87,7 +87,6 @@ export default function ResultShareBar({
 function btnStyle(active: boolean): React.CSSProperties {
   return {
     flex: 1,
-    width: 'auto',
     color: active ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.72)',
     borderColor: 'rgba(255,255,255,0.18)',
     padding: '13px 8px',

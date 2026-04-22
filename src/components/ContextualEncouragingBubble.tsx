@@ -32,8 +32,8 @@ function TimedBubble({ message }: { message: string }) {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => setVisible(false), BUBBLE_DURATION_MS)
-    return () => window.clearTimeout(timeoutId)
+    const timeoutId = setTimeout(() => setVisible(false), BUBBLE_DURATION_MS)
+    return () => clearTimeout(timeoutId)
   }, [])
 
   if (!visible) return null
