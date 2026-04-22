@@ -1,5 +1,8 @@
 import html2canvas from 'html2canvas'
 
+/** Delay before revoking a blob URL opened in a new tab. */
+const BLOB_URL_REVOKE_DELAY_MS = 10_000
+
 /**
  * Captures an HTMLElement as a high-resolution PNG Blob.
  * Excludes browser chrome; preserves colours, spacing, and branding.
@@ -70,5 +73,5 @@ export async function shareBlob(
     // Popup blocked — trigger download instead
     downloadBlob(blob, filename)
   }
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+  setTimeout(() => URL.revokeObjectURL(url), BLOB_URL_REVOKE_DELAY_MS)
 }

@@ -54,7 +54,7 @@ export default function SessionComplete() {
       </div>
 
       <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-success.png" shareTitle="Session Complete on BRAYN ⚡" />
+        <ResultShareBar captureRef={captureRef} filename="brayn-session-complete.png" shareTitle="Session Complete on BRAYN ⚡" />
         <button className="cta-btn" onClick={() => navigate('/home')}>BACK TO HOME</button>
       </div>
     </div>

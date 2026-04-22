@@ -166,7 +166,7 @@ export default function BraynIdProof() {
       </div>
 
       <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-proof.png" shareTitle="My BRAYN ID Proof 🌿" />
+        <ResultShareBar captureRef={captureRef} filename="brayn-id-proof.png" shareTitle="My BRAYN ID Proof 🌿" />
         <button className="cta-btn" onClick={() => navigate('/ai-entry-teaser')}>
           {"SEE WHAT'S NEXT"}
         </button>

@@ -92,7 +92,7 @@ export default function Trophy() {
       </div>
 
       <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-proof.png" shareTitle="My BRAYN Seed Proof 🏆" />
+        <ResultShareBar captureRef={captureRef} filename="brayn-seed-proof.png" shareTitle="My BRAYN Seed Proof 🏆" />
         <button className="cta-btn" onClick={() => navigate('/notifications')}>CLAIM IT</button>
       </div>
     </div>

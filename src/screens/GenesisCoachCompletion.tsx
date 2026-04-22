@@ -48,7 +48,7 @@ export default function GenesisCoachCompletion() {
       </div>
 
       <div className="cta-area">
-        <ResultShareBar captureRef={captureRef} filename="brayn-success.png" shareTitle="My BRAYN Milestone 🎯" />
+        <ResultShareBar captureRef={captureRef} filename="brayn-milestone.png" shareTitle="My BRAYN Milestone 🎯" />
         <button className="cta-btn" onClick={() => navigate('/genesis-reward')}>
           COLLECT YOUR REWARD
         </button>

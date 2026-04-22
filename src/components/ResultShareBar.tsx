@@ -38,8 +38,8 @@ export default function ResultShareBar({
     try {
       const blob = await getBlob()
       downloadBlob(blob, filename)
-    } catch {
-      // silent — user will not be left with a broken UI
+    } catch (err) {
+      console.error('[ResultShareBar] Download failed:', err)
     } finally {
       setBusy(null)
     }
@@ -51,8 +51,8 @@ export default function ResultShareBar({
     try {
       const blob = await getBlob()
       await shareBlob(blob, filename, shareTitle)
-    } catch {
-      // silent
+    } catch (err) {
+      console.error('[ResultShareBar] Share failed:', err)
     } finally {
       setBusy(null)
     }

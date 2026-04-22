@@ -39,7 +39,7 @@ export default function GenesisReward() {
       </div>
 
       <div className="cta-area" style={{ width: '100%' }}>
-        <ResultShareBar captureRef={captureRef} filename="brayn-success.png" shareTitle="My BRAYN Reward Payout 🏅" />
+        <ResultShareBar captureRef={captureRef} filename="brayn-reward-payout.png" shareTitle="My BRAYN Reward Payout 🏅" />
         <button className="cta-btn" onClick={() => navigate('/genesis-artifact')}>
           UNLOCK YOUR ARTIFACT
         </button>
