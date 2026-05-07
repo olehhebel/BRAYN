@@ -130,7 +130,6 @@ function computeCoach() {
 let _navLock = false;
 
 function navigate(screenName) {
-  if (_navLock && screenName !== state.currentScreen) { /* allow forced nav */ }
   _navLock = false;
   clearTransitionTimer();
   const prev = state.currentScreen;
@@ -1233,7 +1232,7 @@ function initNameInput(el) {
   field.addEventListener('input', () => {
     const val = field.value.trim();
     state.name = val;
-    if (headline) headline.textContent = val.length >= 2 ? 'Cool, ' + val + '.' : 'What should we call you?';
+    if (headline) headline.textContent = val.length >= 2 ? 'Cool, ' + escapeHtml(val) + '.' : 'What should we call you?';
     if (val.length >= 2) {
       btn.classList.remove('disabled');
     } else {
@@ -1268,7 +1267,6 @@ function initWhoAreYou(el) {
         if (icon) {
           icon.style.color = isSelected ? 'var(--neon-green)' : 'rgba(255,255,255,0.2)';
           icon.style.borderColor = isSelected ? 'var(--neon-green)' : 'rgba(255,255,255,0.2)';
-          icon.textContent = isSelected ? '✓' : '';
         }
       });
 
@@ -1309,7 +1307,6 @@ function initWhatWant(el) {
         if (icon) {
           icon.style.color = isSelected ? 'var(--neon-green)' : 'rgba(255,255,255,0.2)';
           icon.style.borderColor = isSelected ? 'var(--neon-green)' : 'rgba(255,255,255,0.2)';
-          icon.textContent = isSelected ? '✓' : '';
         }
       });
 
