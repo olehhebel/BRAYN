@@ -1,4 +1,4 @@
-/* global requestAnimationFrame, performance, localStorage */
+/* global requestAnimationFrame, performance, localStorage, sessionStorage */
 'use strict';
 
 // ═══════════════════════════════════════════════════════════
@@ -110,12 +110,13 @@ const RESOURCE_BAR_SHOWN = new Set([
 //  PERSISTENCE
 // ═══════════════════════════════════════════════════════════
 function saveState() {
-  try { localStorage.setItem('brayn_state', JSON.stringify(state)); } catch (_) {}
+  try { sessionStorage.setItem('brayn_state', JSON.stringify(state)); } catch (_) {}
 }
 
 function loadState() {
   try {
-    const saved = localStorage.getItem('brayn_state');
+    localStorage.removeItem('brayn_state');
+    const saved = sessionStorage.getItem('brayn_state');
     if (saved) Object.assign(state, JSON.parse(saved));
   } catch (_) {}
 }
