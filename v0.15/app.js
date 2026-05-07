@@ -17,6 +17,7 @@ const state = {
   resources: { neurons: 0, minutes: 0, beats: 0 },
   avatarSet: false,
   avatarDataUrl: null,
+  onboardingTutorialDone: false,
   currentScreen: 'splash',
   history: []
 };
@@ -26,6 +27,7 @@ const state = {
 // ═══════════════════════════════════════════════════════════
 const COACH_NAMES = { kayra: 'Kayra', orra: 'Orra', maverick: 'Maverick', senzor: 'Senzor' };
 const COACH_INITIALS = { kayra: 'K', orra: 'O', maverick: 'M', senzor: 'S' };
+const REWARD_ANIMATION_MS = 2000;
 
 const COACH_BRANCH_INFO = {
   kayra: {
@@ -79,6 +81,13 @@ const CALIBRATION_QUESTIONS = [
   'When you reach this goal, who will you become?'
 ];
 
+const COACH_NEXT_STEPS = {
+  kayra: 'Define your value proposition this week',
+  orra: 'Identify one key conversation to improve',
+  maverick: 'Map your idea to a real problem',
+  senzor: 'Journal your three biggest current blocks'
+};
+
 const ALL_SCREENS = [
   'splash','signup','faceId','introVideo',
   'transition1','nameInput','transition2','whoAreYou',
@@ -88,12 +97,13 @@ const ALL_SCREENS = [
   'learningContract','coachVideo','knowledgeCheck','resourceSuccessRepeat','tokenReward',
   'senzorIntro','identityInfographic','senzorContract',
   'brainIdAchievements','calibrationIntro','micPermission','textCalibration',
-  'avatarUpload','finalGeneration','expandedContract','galaxyRoom','aiHubTip','braynIdHub'
+  'avatarUpload','finalGeneration','expandedContract','finalTabTutorialGalaxy','finalTabTutorialAiHub',
+  'galaxyRoom','aiHubTip','pathHub','braynIdHub'
 ];
 
 // Resource bar shows ONLY during resource reward moments
 const RESOURCE_BAR_SHOWN = new Set([
-  'resourceSuccess', 'resourceSuccessRepeat', 'tokenReward'
+  'resourceSuccess', 'resourceSuccessRepeat'
 ]);
 
 // ═══════════════════════════════════════════════════════════
@@ -178,6 +188,7 @@ function updateResourceBar(screenName) {
       '<div class="res-divider"></div>' +
       '<span class="resource"><span class="res-icon">🎵</span><span id="res-beats">' + state.resources.beats + '</span></span>' +
     '</div>';
+  triggerResourceBarDrop();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -196,6 +207,47 @@ function animateCounter(el, target, duration) {
     if (progress < 1) requestAnimationFrame(update);
   }
   requestAnimationFrame(update);
+}
+
+function triggerResourceBarDrop() {
+  const bar = document.getElementById('resource-bar');
+  if (!bar || bar.classList.contains('hidden')) return;
+  bar.classList.remove('resource-bar-drop');
+  bar.getBoundingClientRect();
+  bar.classList.add('resource-bar-drop');
+}
+
+function animateResourceBarTotals(targets, duration) {
+  const neuronsEl = document.getElementById('res-neurons');
+  const minutesEl = document.getElementById('res-minutes');
+  const beatsEl = document.getElementById('res-beats');
+  animateCounter(neuronsEl, targets.neurons, duration);
+  animateCounter(minutesEl, targets.minutes, duration);
+  animateCounter(beatsEl, targets.beats, duration);
+}
+
+function spawnResourceFlyers(el, selectors) {
+  const bar = document.getElementById('resource-bar');
+  if (!bar) return;
+  selectors.forEach((item) => {
+    const fromEl = el.querySelector(item.fromSelector);
+    const toEl = document.getElementById(item.toId);
+    if (!fromEl || !toEl) return;
+    const fromRect = fromEl.getBoundingClientRect();
+    const toRect = toEl.getBoundingClientRect();
+    const flyer = document.createElement('div');
+    flyer.className = 'resource-flyer';
+    flyer.textContent = item.icon;
+    flyer.style.left = (fromRect.left + fromRect.width / 2) + 'px';
+    flyer.style.top = (fromRect.top + fromRect.height / 2) + 'px';
+    flyer.style.setProperty('--fly-x', (toRect.left + toRect.width / 2 - (fromRect.left + fromRect.width / 2)) + 'px');
+    flyer.style.setProperty('--fly-y', (toRect.top + toRect.height / 2 - (fromRect.top + fromRect.height / 2)) + 'px');
+    document.body.appendChild(flyer);
+    requestAnimationFrame(() => flyer.classList.add('fly'));
+    setTimeout(() => {
+      if (flyer.parentNode) flyer.parentNode.removeChild(flyer);
+    }, 700);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -317,8 +369,11 @@ function getScreenHTML(name) {
     case 'avatarUpload':     return htmlAvatarUpload();
     case 'finalGeneration':  return htmlFinalGeneration();
     case 'expandedContract': return htmlExpandedContract();
+    case 'finalTabTutorialGalaxy': return htmlFinalTabTutorialGalaxy();
+    case 'finalTabTutorialAiHub': return htmlFinalTabTutorialAiHub();
     case 'galaxyRoom':       return htmlGalaxyRoom();
     case 'aiHubTip':         return htmlAiHubTip();
+    case 'pathHub':          return htmlPathHub();
     case 'braynIdHub':       return htmlBraynIdHub();
     default:                 return '<div class="screen-content"><h2 class="headline">Screen not found: ' + name + '</h2></div>';
   }
@@ -1138,22 +1193,82 @@ function htmlExpandedContract() {
 }
 
 // ── TAB BAR HTML HELPER ─────────────────────────────────────
-function tabBarHTML(activeTab) {
+function tabBarHTML(activeTab, options) {
+  options = options || {};
   const color = state.coachColor || '#D5F20E';
   const tabs = [
+    { id: 'market',   icon: '🛍', label: 'Market', disabled: true, glow: true },
     { id: 'galaxy',   icon: '🌌', label: 'Galaxy' },
+    { id: 'path',     icon: '🧭', label: 'Path' },
     { id: 'ai-hub',   icon: '🤖', label: 'AI Hub' },
     { id: 'brayn-id', icon: '🪪', label: 'BRAYN ID' },
   ];
   return (
     '<div class="tab-bar">' +
       tabs.map(t =>
-        '<div class="tab-item' + (t.id === activeTab ? ' active' : '') + '" data-tab="' + t.id + '"' +
-          (t.id === activeTab ? ' style="color:' + color + '"' : '') + '>' +
+        '<div class="tab-item' +
+          (t.id === activeTab ? ' active' : '') +
+          (t.disabled ? ' disabled' : '') +
+          (t.glow ? ' market-glow' : '') +
+          (options.highlightTab === t.id ? ' tutorial-highlight' : '') +
+          '" data-tab="' + t.id + '"' +
+          (t.id === activeTab ? ' style="color:' + color + '"' : '') +
+          (t.disabled ? ' aria-disabled="true"' : '') + '>' +
           '<div class="tab-icon">' + t.icon + '</div>' +
           '<div class="tab-label">' + t.label + '</div>' +
         '</div>'
       ).join('') +
+    '</div>'
+  );
+}
+
+function pathCardHTML() {
+  const c = state.coach || 'kayra';
+  const color = state.coachColor || '#D5F20E';
+  const info = COACH_BRANCH_INFO[c] || COACH_BRANCH_INFO.kayra;
+  const coachName = COACH_NAMES[c] || 'Kayra';
+  const nextStep = COACH_NEXT_STEPS[c] || COACH_NEXT_STEPS.kayra;
+  return (
+    '<div class="path-contract-card" style="border-color:' + color + '55">' +
+      '<div class="path-contract-title" style="color:' + color + '">Learning Contract</div>' +
+      '<div class="path-contract-row"><span class="path-contract-label">Selected coach</span><span class="path-contract-value">' + escapeHtml(coachName) + '</span></div>' +
+      '<div class="path-contract-row"><span class="path-contract-label">Primary branch</span><span class="path-contract-value">' + escapeHtml(info.branch) + '</span></div>' +
+      '<div class="path-contract-row"><span class="path-contract-label">Support branch</span><span class="path-contract-value">Learncenter</span></div>' +
+      '<div class="path-contract-row"><span class="path-contract-label">First focus</span><span class="path-contract-value">' + escapeHtml(info.focus) + '</span></div>' +
+      '<div class="path-contract-row"><span class="path-contract-label">Next step</span><span class="path-contract-value">' + escapeHtml(nextStep) + '</span></div>' +
+    '</div>'
+  );
+}
+
+function htmlFinalTabTutorialGalaxy() {
+  return (
+    '<div style="display:flex;flex-direction:column;height:100%">' +
+      '<div style="flex:1;padding:24px var(--screen-pad) 16px;display:flex;flex-direction:column;justify-content:center">' +
+        '<h1 class="headline">This is Galaxy.</h1>' +
+        '<p class="subtitle">Galaxy is your main growth space. Explore rooms, branches, and learning directions here.</p>' +
+      '</div>' +
+      '<div class="screen-footer">' +
+        '<button class="btn-primary no-pulse" id="btn-tutorial-galaxy-next">Show AI Hub</button>' +
+      '</div>' +
+      tabBarHTML('galaxy', { highlightTab: 'galaxy' }) +
+    '</div>'
+  );
+}
+
+function htmlFinalTabTutorialAiHub() {
+  return (
+    '<div style="display:flex;flex-direction:column;height:100%">' +
+      '<div style="flex:1;padding:24px var(--screen-pad) 16px;display:flex;flex-direction:column;justify-content:center;gap:18px">' +
+        '<h1 class="headline">And this is AI Hub.</h1>' +
+        '<div class="coach-guidance-card">' +
+          '<div class="coach-portrait" style="width:44px;height:44px;background:#D5F20E22;border:2px solid #D5F20E;color:#D5F20E;font-size:17px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:0">K</div>' +
+          '<div style="font-size:14px;line-height:1.55;color:var(--text-secondary)">“You can always find me here when you need guidance.”</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="screen-footer">' +
+        '<button class="btn-primary no-pulse" id="btn-tutorial-aihub-done">Enter App</button>' +
+      '</div>' +
+      tabBarHTML('ai-hub', { highlightTab: 'ai-hub' }) +
     '</div>'
   );
 }
@@ -1257,6 +1372,19 @@ function htmlAiHubTip() {
   );
 }
 
+function htmlPathHub() {
+  return (
+    '<div style="display:flex;flex-direction:column;height:100%">' +
+      '<div style="flex:1;overflow-y:auto;padding:24px var(--screen-pad) 16px">' +
+        '<h1 class="headline">Path</h1>' +
+        '<p class="subtitle">Your contract snapshot and next move.</p>' +
+        '<div style="margin-top:20px">' + pathCardHTML() + '</div>' +
+      '</div>' +
+      tabBarHTML('path') +
+    '</div>'
+  );
+}
+
 // ── BRAYN ID HUB ────────────────────────────────────────────
 function htmlBraynIdHub() {
   const color = state.coachColor || '#D5F20E';
@@ -1325,8 +1453,11 @@ function initScreen(name, el) {
     case 'avatarUpload':     initAvatarUpload(el); break;
     case 'finalGeneration':  initFinalGeneration(el); break;
     case 'expandedContract': initExpandedContract(el); break;
+    case 'finalTabTutorialGalaxy': initFinalTabTutorialGalaxy(el); break;
+    case 'finalTabTutorialAiHub': initFinalTabTutorialAiHub(el); break;
     case 'galaxyRoom':       initGalaxyRoom(el); break;
     case 'aiHubTip':         initAiHubTip(el); break;
+    case 'pathHub':          initPathHub(el); break;
     case 'braynIdHub':       initBraynIdHub(el); break;
   }
 }
@@ -1531,20 +1662,36 @@ function initNotification(el) {
 
 function initResourceSuccess(el) {
   setTimeout(() => {
-    animateCounter(el.querySelector('#reward-neurons'), 200);
-    animateCounter(el.querySelector('#reward-minutes'), 60, 1000);
-    animateCounter(el.querySelector('#reward-beats'), 30, 800);
-  }, 300);
+    animateCounter(el.querySelector('#reward-neurons'), 200, REWARD_ANIMATION_MS);
+    animateCounter(el.querySelector('#reward-minutes'), 60, REWARD_ANIMATION_MS);
+    animateCounter(el.querySelector('#reward-beats'), 30, REWARD_ANIMATION_MS);
+  }, 120);
 
   const btn = el.querySelector('#btn-take-resources');
   if (btn) {
     btn.addEventListener('click', () => {
-      state.resources.neurons += 200;
-      state.resources.minutes += 60;
-      state.resources.beats += 30;
-      saveState();
-      updateResourceBar(state.currentScreen);
-      navigate('resourceEducation');
+      if (btn.dataset.busy === 'true') return;
+      btn.dataset.busy = 'true';
+      btn.classList.add('disabled');
+      btn.textContent = 'Adding…';
+      const targets = {
+        neurons: state.resources.neurons + 200,
+        minutes: state.resources.minutes + 60,
+        beats: state.resources.beats + 30
+      };
+      triggerResourceBarDrop();
+      spawnResourceFlyers(el, [
+        { fromSelector: '#reward-neurons', toId: 'res-neurons', icon: '💡' },
+        { fromSelector: '#reward-minutes', toId: 'res-minutes', icon: '⏱' },
+        { fromSelector: '#reward-beats', toId: 'res-beats', icon: '🎵' }
+      ]);
+      animateResourceBarTotals(targets, REWARD_ANIMATION_MS);
+      setTransitionTimer(REWARD_ANIMATION_MS, () => {
+        state.resources = targets;
+        saveState();
+        updateResourceBar(state.currentScreen);
+        navigate('resourceEducation');
+      });
     });
   }
 }
@@ -1643,20 +1790,36 @@ function initKnowledgeCheck(el) {
 
 function initResourceSuccessRepeat(el) {
   setTimeout(() => {
-    animateCounter(el.querySelector('#reward2-neurons'), 100);
-    animateCounter(el.querySelector('#reward2-minutes'), 30, 1000);
-    animateCounter(el.querySelector('#reward2-beats'), 15, 800);
-  }, 300);
+    animateCounter(el.querySelector('#reward2-neurons'), 100, REWARD_ANIMATION_MS);
+    animateCounter(el.querySelector('#reward2-minutes'), 30, REWARD_ANIMATION_MS);
+    animateCounter(el.querySelector('#reward2-beats'), 15, REWARD_ANIMATION_MS);
+  }, 120);
 
   const btn = el.querySelector('#btn-collect-resources');
   if (btn) {
     btn.addEventListener('click', () => {
-      state.resources.neurons += 100;
-      state.resources.minutes += 30;
-      state.resources.beats += 15;
-      saveState();
-      updateResourceBar(state.currentScreen);
-      navigate('tokenReward');
+      if (btn.dataset.busy === 'true') return;
+      btn.dataset.busy = 'true';
+      btn.classList.add('disabled');
+      btn.textContent = 'Adding…';
+      const targets = {
+        neurons: state.resources.neurons + 100,
+        minutes: state.resources.minutes + 30,
+        beats: state.resources.beats + 15
+      };
+      triggerResourceBarDrop();
+      spawnResourceFlyers(el, [
+        { fromSelector: '#reward2-neurons', toId: 'res-neurons', icon: '💡' },
+        { fromSelector: '#reward2-minutes', toId: 'res-minutes', icon: '⏱' },
+        { fromSelector: '#reward2-beats', toId: 'res-beats', icon: '🎵' }
+      ]);
+      animateResourceBarTotals(targets, REWARD_ANIMATION_MS);
+      setTransitionTimer(REWARD_ANIMATION_MS, () => {
+        state.resources = targets;
+        saveState();
+        updateResourceBar(state.currentScreen);
+        navigate('tokenReward');
+      });
     });
   }
 }
@@ -1825,7 +1988,23 @@ function initFinalGeneration(el) {
 
 function initExpandedContract(el) {
   const btn = el.querySelector('#btn-enter-path');
-  if (btn) btn.addEventListener('click', () => navigate('galaxyRoom'));
+  if (btn) btn.addEventListener('click', () => navigate(state.onboardingTutorialDone ? 'galaxyRoom' : 'finalTabTutorialGalaxy'));
+}
+
+function initFinalTabTutorialGalaxy(el) {
+  const btn = el.querySelector('#btn-tutorial-galaxy-next');
+  if (btn) btn.addEventListener('click', () => navigate('finalTabTutorialAiHub'));
+}
+
+function initFinalTabTutorialAiHub(el) {
+  const btn = el.querySelector('#btn-tutorial-aihub-done');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      state.onboardingTutorialDone = true;
+      saveState();
+      navigate('galaxyRoom');
+    });
+  }
 }
 
 function initGalaxyRoom(el) {
@@ -1849,6 +2028,10 @@ function initAiHubTip(el) {
   initTabBar(el);
 }
 
+function initPathHub(el) {
+  initTabBar(el);
+}
+
 function initBraynIdHub(el) {
   initTabBar(el);
 }
@@ -1857,8 +2040,10 @@ function initTabBar(el) {
   const tabs = el.querySelectorAll('.tab-item[data-tab]');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      if (tab.classList.contains('disabled')) return;
       const tabId = tab.dataset.tab;
       if (tabId === 'galaxy') navigate('galaxyRoom');
+      else if (tabId === 'path') navigate('pathHub');
       else if (tabId === 'ai-hub') navigate('aiHubTip');
       else if (tabId === 'brayn-id') navigate('braynIdHub');
     });
@@ -1924,7 +2109,7 @@ function triggerHaptic() {
 // ═══════════════════════════════════════════════════════════
 //  CTA ENCOURAGEMENT HINT
 // ═══════════════════════════════════════════════════════════
-const CTA_HINTS = ['Nice.', 'Good move.', 'Locked in.', "Let's go.", 'Smart step.', 'Great.'];
+const CTA_HINTS = ['Nice.', 'Good move.', 'Locked in.', "Let’s go.", 'Great.'];
 
 function showCtaHint(btn) {
   const hint = document.createElement('div');
@@ -1935,8 +2120,8 @@ function showCtaHint(btn) {
   hint.style.cssText = [
     'position:fixed',
     'left:' + (rect.left + rect.width / 2) + 'px',
-    'top:' + (rect.top - 12) + 'px',
-    'transform:translateX(-50%)',
+    'top:' + (rect.top - 8) + 'px',
+    'transform:translate(-50%, -100%)',
   ].join(';');
 
   document.body.appendChild(hint);
