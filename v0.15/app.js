@@ -84,16 +84,16 @@ const ALL_SCREENS = [
   'transition1','nameInput','transition2','whoAreYou',
   'transition3','whatWant','transition4','timeWheel',
   'notificationPermission','resourceSuccess','resourceEducation',
-  'firstProofTrophy','aiPathGeneration',
+  'firstProofTrophy','braynIdFirstLook','aiPathGeneration',
   'learningContract','coachVideo','knowledgeCheck','resourceSuccessRepeat','tokenReward',
   'senzorIntro','identityInfographic','senzorContract',
   'brainIdAchievements','calibrationIntro','micPermission','textCalibration',
-  'avatarUpload','finalGeneration','expandedContract','galaxyRoom','aiHubTip'
+  'avatarUpload','finalGeneration','expandedContract','galaxyRoom','aiHubTip','braynIdHub'
 ];
 
-const RESOURCE_BAR_HIDDEN = new Set([
-  'splash','signup','faceId','introVideo',
-  'transition1','transition2','transition3','transition4'
+// Resource bar shows ONLY during resource reward moments
+const RESOURCE_BAR_SHOWN = new Set([
+  'resourceSuccess', 'resourceSuccessRepeat', 'tokenReward'
 ]);
 
 // ═══════════════════════════════════════════════════════════
@@ -165,7 +165,7 @@ function showToast(message, duration) {
 function updateResourceBar(screenName) {
   const bar = document.getElementById('resource-bar');
   if (!bar) return;
-  if (RESOURCE_BAR_HIDDEN.has(screenName)) {
+  if (!RESOURCE_BAR_SHOWN.has(screenName)) {
     bar.className = 'hidden';
     return;
   }
@@ -300,6 +300,7 @@ function getScreenHTML(name) {
     case 'resourceSuccess':  return htmlResourceSuccess();
     case 'resourceEducation':return htmlResourceEducation();
     case 'firstProofTrophy': return htmlFirstProofTrophy();
+    case 'braynIdFirstLook': return htmlBraynIdFirstLook();
     case 'aiPathGeneration': return htmlAiPathGeneration();
     case 'learningContract': return htmlLearningContract();
     case 'coachVideo':       return htmlCoachVideo();
@@ -318,6 +319,7 @@ function getScreenHTML(name) {
     case 'expandedContract': return htmlExpandedContract();
     case 'galaxyRoom':       return htmlGalaxyRoom();
     case 'aiHubTip':         return htmlAiHubTip();
+    case 'braynIdHub':       return htmlBraynIdHub();
     default:                 return '<div class="screen-content"><h2 class="headline">Screen not found: ' + name + '</h2></div>';
   }
 }
@@ -391,6 +393,7 @@ function htmlIntroVideo() {
         '<button class="video-skip-btn" id="btn-intro-skip">Skip</button>' +
         '<div class="play-icon">▶</div>' +
         '<div class="video-label">BRAYN Intro</div>' +
+        '<div class="video-transition-text">Transition video will be here.</div>' +
       '</div>' +
     '</div>'
   );
@@ -405,6 +408,7 @@ function htmlTransition(id, next, duration) {
     '<div class="transition-screen" data-next="' + next + '" data-duration="' + duration + '" id="' + id + '-inner">' +
       '<div class="particles-bg" id="' + id + '-particles"></div>' +
       '<div class="waveform">' + bars + '</div>' +
+      '<div class="video-transition-text">Transition video will be here.</div>' +
     '</div>'
   );
 }
@@ -614,6 +618,42 @@ function htmlFirstProofTrophy() {
   );
 }
 
+// ── BRAYN ID FIRST LOOK ─────────────────────────────────────
+function htmlBraynIdFirstLook() {
+  const color = state.coachColor || '#D5F20E';
+  return (
+    '<div class="screen-content screen-scrollable" style="padding-bottom:16px">' +
+      '<div style="padding-top:20px;display:flex;flex-direction:column;align-items:center;text-align:center">' +
+        '<div style="font-size:72px;margin-bottom:8px;animation:trophyBounce 0.8s ease-out">🪪</div>' +
+        '<h1 class="headline">Your BRAYN ID<br>just activated.</h1>' +
+        '<p class="subtitle" style="margin-bottom:24px">Your first proof is permanently stored here.</p>' +
+        '<div class="brayn-id-proof-card" style="border-color:' + color + '55;width:100%">' +
+          '<div class="bid-row">' +
+            '<span class="bid-label">FIRST PROOF</span>' +
+            '<span class="bid-value" style="color:' + color + '">🏆 Seed Trophy</span>' +
+          '</div>' +
+          '<div class="bid-row">' +
+            '<span class="bid-label">STORES</span>' +
+            '<span class="bid-value">Proofs · Tokens · Trophies</span>' +
+          '</div>' +
+          '<div class="bid-row">' +
+            '<span class="bid-label">FUTURE</span>' +
+            '<span class="bid-value">Artifacts &amp; Growth Signals</span>' +
+          '</div>' +
+          '<div class="bid-row" style="border-bottom:none">' +
+            '<span class="bid-label">STATUS</span>' +
+            '<span class="bid-value" style="color:' + color + '">Active</span>' +
+          '</div>' +
+        '</div>' +
+        '<p class="helper" style="margin-top:16px;padding:0 8px;line-height:1.6">BRAYN ID is your permanent proof of growth. It stores every proof, token, trophy, and artifact you earn — and evolves as you progress.</p>' +
+      '</div>' +
+    '</div>' +
+    '<div class="screen-footer">' +
+      '<button class="btn-primary no-pulse" id="btn-braynid-firstlook-continue">Build My Path →</button>' +
+    '</div>'
+  );
+}
+
 // ── AI PATH GENERATION ──────────────────────────────────────
 function htmlAiPathGeneration() {
   const steps = [
@@ -686,7 +726,7 @@ function htmlLearningContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-contract-start" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Start My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-contract-start">Start My Path</button>' +
     '</div>'
   );
 }
@@ -704,6 +744,7 @@ function htmlCoachVideo() {
         '<button class="video-skip-btn" id="btn-coach-video-skip">Skip</button>' +
         coachPortraitHTML(56) +
         '<div class="video-label" style="color:' + color + '">' + escapeHtml(name) + ' — Introduction</div>' +
+        '<div class="video-transition-text">Transition video will be here.</div>' +
       '</div>' +
     '</div>'
   );
@@ -774,7 +815,7 @@ function htmlTokenReward() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-add-token" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Add to BRAYN ID</button>' +
+      '<button class="btn-primary no-pulse" id="btn-add-token">Add to BRAYN ID</button>' +
     '</div>'
   );
 }
@@ -789,6 +830,7 @@ function htmlSenzorIntro() {
         '<button class="video-skip-btn" id="btn-senzor-skip">Skip</button>' +
         '<div class="coach-portrait" style="width:56px;height:56px;background:#FF2D7822;border:2px solid #FF2D78;color:#FF2D78;font-size:22px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center">S</div>' +
         '<div class="video-label" style="color:#FF2D78">Senzor — Introduction</div>' +
+        '<div class="video-transition-text">Transition video will be here.</div>' +
       '</div>' +
     '</div>'
   );
@@ -825,7 +867,7 @@ function htmlIdentityInfographic() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-see-contract" style="background:#FF2D78;color:#fff;box-shadow:0 0 24px #FF2D7866">See My Contract</button>' +
+      '<button class="btn-primary no-pulse" id="btn-see-contract">See My Contract</button>' +
     '</div>'
   );
 }
@@ -866,7 +908,7 @@ function htmlSenzorContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-senzor-contract-start" style="background:#FF2D78;color:#fff;box-shadow:0 0 24px #FF2D7866">Start My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-senzor-contract-start">Start My Path</button>' +
     '</div>'
   );
 }
@@ -1090,29 +1132,87 @@ function htmlExpandedContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-enter-path" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Enter My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-enter-path">Enter My Path</button>' +
+    '</div>'
+  );
+}
+
+// ── TAB BAR HTML HELPER ─────────────────────────────────────
+function tabBarHTML(activeTab) {
+  const color = state.coachColor || '#D5F20E';
+  const tabs = [
+    { id: 'galaxy',   icon: '🌌', label: 'Galaxy' },
+    { id: 'ai-hub',   icon: '🤖', label: 'AI Hub' },
+    { id: 'brayn-id', icon: '🪪', label: 'BRAYN ID' },
+  ];
+  return (
+    '<div class="tab-bar">' +
+      tabs.map(t =>
+        '<div class="tab-item' + (t.id === activeTab ? ' active' : '') + '" data-tab="' + t.id + '"' +
+          (t.id === activeTab ? ' style="color:' + color + '"' : '') + '>' +
+          '<div class="tab-icon">' + t.icon + '</div>' +
+          '<div class="tab-label">' + t.label + '</div>' +
+        '</div>'
+      ).join('') +
     '</div>'
   );
 }
 
 // ── GALAXY ROOM ─────────────────────────────────────────────
 function htmlGalaxyRoom() {
+  const coach = state.coach || 'kayra';
   const color = state.coachColor || '#D5F20E';
+
+  const ROOMS = [
+    { coach: 'kayra',    color: '#D5F20E', emoji: '🌿', name: 'Career Strategy',     why: 'Your career direction goal leads here — this room helps you articulate your value and navigate your next move.' },
+    { coach: 'orra',     color: '#00E5FF', emoji: '🌊', name: 'Communication',        why: 'Your focus on communication and influence shapes every outcome — this room builds real confidence.' },
+    { coach: 'maverick', color: '#FF6B35', emoji: '🔥', name: 'Entrepreneurship',     why: 'Your path to building and executing lives here — ideas become actions in this room.' },
+    { coach: 'senzor',   color: '#FF2D78', emoji: '🔬', name: 'Thinking & Clarity',   why: 'Cognitive agility and decision clarity are your foundation — Senzor guides you here.' },
+  ];
+
+  const activeRoom = ROOMS.find(r => r.coach === coach) || ROOMS[0];
+
+  const roomsHTML = ROOMS.map(room => {
+    const isActive = room.coach === coach;
+    return (
+      '<div class="galaxy-room-card' + (isActive ? ' active' : '') + '"' +
+        (isActive ? ' style="border-color:' + room.color + ';background:' + room.color + '15"' : '') + '>' +
+        '<div class="galaxy-room-orb"' +
+          ' style="background:' + (isActive ? 'radial-gradient(circle at 35% 35%,' + room.color + 'bb,' + room.color + '33)' : 'rgba(255,255,255,0.06)') + ';' +
+          'border-color:' + (isActive ? room.color : 'rgba(255,255,255,0.1)') + ';' +
+          'opacity:' + (isActive ? '1' : '0.35') + ';' +
+          (isActive ? 'box-shadow:0 0 20px ' + room.color + '66' : '') + '">' +
+          room.emoji +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700;color:' + (isActive ? '#fff' : 'rgba(255,255,255,0.45)') + '">' + room.name + '</div>' +
+          (isActive
+            ? '<div style="font-size:10px;font-weight:700;color:' + room.color + ';margin-top:3px;letter-spacing:0.05em">YOUR ROOM · ACTIVE</div>'
+            : '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:3px">🔒 Locked</div>'
+          ) +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
   return (
     '<div class="galaxy-screen">' +
       '<div class="galaxy-bg"></div>' +
       '<div class="stars-layer"></div>' +
       '<div class="particles-bg" id="galaxy-particles"></div>' +
-      '<div class="galaxy-content">' +
-        '<div class="galaxy-badge" style="background:' + color + '22;border:2px solid ' + color + '55">' +
-          '<span>🌌</span>' +
+      '<div style="position:relative;z-index:1;flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:24px var(--screen-pad) 16px">' +
+        '<h1 class="headline">Welcome to<br>your Galaxy.</h1>' +
+        '<p class="subtitle">One room is live. Others unlock as you grow.</p>' +
+        '<div class="galaxy-rooms-list" style="margin-top:20px">' + roomsHTML + '</div>' +
+        '<div class="galaxy-why-card" style="border-color:' + color + '44;margin-top:16px">' +
+          '<div style="font-size:10px;font-weight:700;color:' + color + ';letter-spacing:0.1em;margin-bottom:6px">WHY THIS ROOM</div>' +
+          '<p style="font-size:14px;color:var(--text-secondary);line-height:1.5">' + escapeHtml(activeRoom.why) + '</p>' +
         '</div>' +
-        '<h1 class="headline" style="color:#fff">Welcome to your Galaxy.</h1>' +
-        '<p class="subtitle">Your growth universe starts here.</p>' +
+        '<div style="margin-top:20px;padding-bottom:8px">' +
+          '<button class="btn-primary no-pulse" id="btn-galaxy-continue">Enter My Room</button>' +
+        '</div>' +
       '</div>' +
-      '<div class="galaxy-footer">' +
-        '<button class="btn-primary no-pulse" id="btn-galaxy-continue" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Continue</button>' +
-      '</div>' +
+      tabBarHTML('galaxy') +
     '</div>'
   );
 }
@@ -1120,31 +1220,69 @@ function htmlGalaxyRoom() {
 // ── AI HUB TIP ──────────────────────────────────────────────
 function htmlAiHubTip() {
   const color = state.coachColor || '#D5F20E';
-  const tabs = [
-    { icon: '🛒', label: 'Market' },
-    { icon: '🗺', label: 'My Path' },
-    { icon: '🌌', label: 'Galaxy' },
-    { icon: '🤖', label: 'AI Hub', active: true },
-    { icon: '🪪', label: 'BRAYN ID' }
+
+  const COACHES = [
+    { id: 'kayra',    color: '#D5F20E', initial: 'K', name: 'Kayra',    role: 'Career Strategy & Leadership' },
+    { id: 'orra',     color: '#00E5FF', initial: 'O', name: 'Orra',     role: 'Communication & Presence' },
+    { id: 'maverick', color: '#FF6B35', initial: 'M', name: 'Maverick', role: 'Entrepreneurship & Execution' },
+    { id: 'senzor',   color: '#FF2D78', initial: 'S', name: 'Senzor',   role: 'Thinking & Cognitive Clarity' },
   ];
+
+  const coachCardsHTML = COACHES.map(c => {
+    const isActive = c.id === (state.coach || 'kayra');
+    return (
+      '<div class="ai-coach-card"' + (isActive ? ' style="border-color:' + c.color + ';background:' + c.color + '12"' : '') + '>' +
+        '<div class="coach-portrait" style="width:44px;height:44px;background:' + c.color + '22;border:2px solid ' + c.color + ';color:' + c.color + ';font-size:18px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:0">' + c.initial + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700;color:' + c.color + '">' + c.name + (isActive ? ' <span style=\'font-size:10px;background:' + c.color + ';color:#020B18;padding:2px 6px;border-radius:99px;font-weight:700\'>YOURS</span>' : '') + '</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary);margin-top:2px">' + c.role + '</div>' +
+        '</div>' +
+        '<div class="ai-coach-action-row">' +
+          '<button class="ai-action-btn" data-coach="' + c.id + '" data-mode="voice">🎙 Voice</button>' +
+          '<button class="ai-action-btn" data-coach="' + c.id + '" data-mode="text">💬 Text</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
   return (
     '<div style="display:flex;flex-direction:column;height:100%">' +
-      '<div class="hub-tip-content">' +
-        '<div style="width:80px;height:80px;border-radius:50%;background:' + color + '22;border:2px solid ' + color + '55;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:8px">🤖</div>' +
-        '<h1 class="headline">Your coach is always<br>one tap away.</h1>' +
-        '<p class="subtitle">Find your coach in the AI Hub whenever you need guidance, feedback, or a sharper next step.</p>' +
-        '<div style="margin-top:24px">' +
-          '<button class="btn-primary no-pulse" id="btn-open-hub" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Open AI Hub</button>' +
+      '<div style="flex:1;overflow-y:auto;padding:24px var(--screen-pad) 16px">' +
+        '<h1 class="headline">AI Hub</h1>' +
+        '<p class="subtitle">Choose a coach and start a live or text session.</p>' +
+        '<div class="ai-coach-list" style="margin-top:20px">' + coachCardsHTML + '</div>' +
+      '</div>' +
+      tabBarHTML('ai-hub') +
+    '</div>'
+  );
+}
+
+// ── BRAYN ID HUB ────────────────────────────────────────────
+function htmlBraynIdHub() {
+  const color = state.coachColor || '#D5F20E';
+  const displayName = state.name || 'Brayner';
+  const neurons = state.resources.neurons || 0;
+  const minutes = state.resources.minutes || 0;
+
+  return (
+    '<div style="display:flex;flex-direction:column;height:100%">' +
+      '<div style="flex:1;overflow-y:auto;padding:24px var(--screen-pad) 16px">' +
+        '<h1 class="headline">Your BRAYN ID</h1>' +
+        '<p class="subtitle">Your proofs, tokens, and trophies.</p>' +
+        '<div class="brayn-id-proof-card" style="border-color:' + color + '55;margin-top:20px;text-align:center">' +
+          '<div style="font-size:48px;margin-bottom:12px">🏆</div>' +
+          '<div style="font-size:11px;font-weight:700;color:' + color + ';letter-spacing:0.15em;margin-bottom:4px">BRAYN SEED PROOF</div>' +
+          '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">' + escapeHtml(displayName.toUpperCase()) + '</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary)">Phase 1 · Active</div>' +
         '</div>' +
+        '<div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">' +
+          '<div class="bid-stat-card"><div style="font-size:20px">⚡</div><div style="font-size:20px;font-weight:700;color:' + color + '">' + neurons + '</div><div style="font-size:9px;color:var(--text-tertiary);font-weight:700;letter-spacing:0.08em">NEURONS</div></div>' +
+          '<div class="bid-stat-card"><div style="font-size:20px">⏱</div><div style="font-size:20px;font-weight:700;color:' + color + '">' + minutes + '</div><div style="font-size:9px;color:var(--text-tertiary);font-weight:700;letter-spacing:0.08em">MINUTES</div></div>' +
+          '<div class="bid-stat-card"><div style="font-size:20px">⭐</div><div style="font-size:20px;font-weight:700;color:' + color + '">1</div><div style="font-size:9px;color:var(--text-tertiary);font-weight:700;letter-spacing:0.08em">TOKEN</div></div>' +
+        '</div>' +
+        '<p class="helper" style="margin-top:16px;text-align:center;line-height:1.6">BRAYN ID stores your proofs, tokens, trophies, and all future growth artifacts. It evolves as you grow.</p>' +
       '</div>' +
-      '<div class="tab-bar">' +
-        tabs.map(t =>
-          '<div class="tab-item' + (t.active ? ' active' : '') + '" style="' + (t.active ? 'color:' + color : '') + '">' +
-            '<div class="tab-icon">' + t.icon + '</div>' +
-            '<div class="tab-label">' + t.label + '</div>' +
-          '</div>'
-        ).join('') +
-      '</div>' +
+      tabBarHTML('brayn-id') +
     '</div>'
   );
 }
@@ -1170,6 +1308,7 @@ function initScreen(name, el) {
     case 'resourceSuccess':  initResourceSuccess(el); break;
     case 'resourceEducation':initResourceEducation(el); break;
     case 'firstProofTrophy': initFirstProofTrophy(el); break;
+    case 'braynIdFirstLook': initBraynIdFirstLook(el); break;
     case 'aiPathGeneration': initAiPathGeneration(el); break;
     case 'learningContract': initLearningContract(el); break;
     case 'coachVideo':       initCoachVideo(el); break;
@@ -1188,6 +1327,7 @@ function initScreen(name, el) {
     case 'expandedContract': initExpandedContract(el); break;
     case 'galaxyRoom':       initGalaxyRoom(el); break;
     case 'aiHubTip':         initAiHubTip(el); break;
+    case 'braynIdHub':       initBraynIdHub(el); break;
   }
 }
 
@@ -1417,8 +1557,13 @@ function initResourceEducation(el) {
 function initFirstProofTrophy(el) {
   const cont = el.querySelector('#btn-trophy-continue');
   const share = el.querySelector('#btn-trophy-share');
-  if (cont) cont.addEventListener('click', () => navigate('aiPathGeneration'));
+  if (cont) cont.addEventListener('click', () => navigate('braynIdFirstLook'));
   if (share) share.addEventListener('click', () => showToast('Share link copied!'));
+}
+
+function initBraynIdFirstLook(el) {
+  const btn = el.querySelector('#btn-braynid-firstlook-continue');
+  if (btn) btn.addEventListener('click', () => navigate('aiPathGeneration'));
 }
 
 function initAiPathGeneration(el) {
@@ -1688,33 +1833,36 @@ function initGalaxyRoom(el) {
   if (pBg) createParticles(pBg, 25, ['#ffffff','#D5F20E','#00E5FF']);
   const btn = el.querySelector('#btn-galaxy-continue');
   if (btn) btn.addEventListener('click', () => navigate('aiHubTip'));
+  initTabBar(el);
 }
 
 function initAiHubTip(el) {
-  const btn = el.querySelector('#btn-open-hub');
-  if (btn) {
+  const actionBtns = el.querySelectorAll('.ai-action-btn');
+  actionBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      showToast('🎉 You\'ve completed onboarding!', 2000);
-      setTransitionTimer(2200, () => {
-        // Reset for replay
-        state.name = '';
-        state.whoAreYou = null;
-        state.whatWant = null;
-        state.timePerDay = null;
-        state.coach = null;
-        state.coachColor = null;
-        state.calibrationMode = null;
-        state.textCalibrationStep = 0;
-        state.textCalibrationAnswers = [];
-        state.resources = { neurons: 0, minutes: 0, beats: 0 };
-        state.avatarSet = false;
-        state.avatarDataUrl = null;
-        state.history = [];
-        saveState();
-        navigate('splash');
-      });
+      const coachName = btn.dataset.coach;
+      const mode = btn.dataset.mode;
+      const modeLabel = mode === 'voice' ? 'voice session' : 'text chat';
+      showToast('Starting ' + modeLabel + ' with ' + (coachName.charAt(0).toUpperCase() + coachName.slice(1)) + '…');
     });
-  }
+  });
+  initTabBar(el);
+}
+
+function initBraynIdHub(el) {
+  initTabBar(el);
+}
+
+function initTabBar(el) {
+  const tabs = el.querySelectorAll('.tab-item[data-tab]');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.dataset.tab;
+      if (tabId === 'galaxy') navigate('galaxyRoom');
+      else if (tabId === 'ai-hub') navigate('aiHubTip');
+      else if (tabId === 'brayn-id') navigate('braynIdHub');
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1763,6 +1911,59 @@ function escapeHtml(str) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  HAPTIC FEEDBACK
+// ═══════════════════════════════════════════════════════════
+const CTA_BOUNCE_MS = 420; // keep in sync with --cta-bounce-duration in CSS
+
+function triggerHaptic() {
+  try {
+    if (navigator.vibrate) { navigator.vibrate(12); }
+  } catch (_) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CTA ENCOURAGEMENT HINT
+// ═══════════════════════════════════════════════════════════
+const CTA_HINTS = ['Nice.', 'Good move.', 'Locked in.', "Let's go.", 'Smart step.', 'Great.'];
+
+function showCtaHint(btn) {
+  const hint = document.createElement('div');
+  hint.className = 'cta-hint';
+  hint.textContent = CTA_HINTS[Math.floor(Math.random() * CTA_HINTS.length)];
+
+  const rect = btn.getBoundingClientRect();
+  hint.style.cssText = [
+    'position:fixed',
+    'left:' + (rect.left + rect.width / 2) + 'px',
+    'top:' + (rect.top - 12) + 'px',
+    'transform:translateX(-50%)',
+  ].join(';');
+
+  document.body.appendChild(hint);
+  // trigger reflow so animation starts fresh
+  hint.getBoundingClientRect();
+  hint.classList.add('cta-hint-active');
+
+  setTimeout(() => {
+    if (hint.parentNode) hint.parentNode.removeChild(hint);
+  }, 900);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL CTA BUTTON HANDLER (haptic + bounce + hint)
+// ═══════════════════════════════════════════════════════════
+function setupCtaFeedback() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-primary:not([disabled]):not(.disabled)');
+    if (!btn) return;
+    triggerHaptic();
+    btn.classList.add('btn-tap');
+    setTimeout(() => btn.classList.remove('btn-tap'), CTA_BOUNCE_MS);
+    showCtaHint(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 //  TRIPLE-TAP LOGO HANDLER
 // ═══════════════════════════════════════════════════════════
 function setupTripleTap() {
@@ -1797,6 +1998,7 @@ function init() {
   renderDebugPanel();
   renderScreen('splash', false);
   setupTripleTap();
+  setupCtaFeedback();
 
   window.addEventListener('resize', () => { renderDebugPanel(); }, { passive: true });
 }
