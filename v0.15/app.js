@@ -726,7 +726,7 @@ function htmlLearningContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-contract-start" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Start My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-contract-start">Start My Path</button>' +
     '</div>'
   );
 }
@@ -815,7 +815,7 @@ function htmlTokenReward() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-add-token" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Add to BRAYN ID</button>' +
+      '<button class="btn-primary no-pulse" id="btn-add-token">Add to BRAYN ID</button>' +
     '</div>'
   );
 }
@@ -867,7 +867,7 @@ function htmlIdentityInfographic() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-see-contract" style="background:#FF2D78;color:#fff;box-shadow:0 0 24px #FF2D7866">See My Contract</button>' +
+      '<button class="btn-primary no-pulse" id="btn-see-contract">See My Contract</button>' +
     '</div>'
   );
 }
@@ -908,7 +908,7 @@ function htmlSenzorContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-senzor-contract-start" style="background:#FF2D78;color:#fff;box-shadow:0 0 24px #FF2D7866">Start My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-senzor-contract-start">Start My Path</button>' +
     '</div>'
   );
 }
@@ -1132,7 +1132,7 @@ function htmlExpandedContract() {
       '</div>' +
     '</div>' +
     '<div class="screen-footer">' +
-      '<button class="btn-primary no-pulse" id="btn-enter-path" style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Enter My Path</button>' +
+      '<button class="btn-primary no-pulse" id="btn-enter-path">Enter My Path</button>' +
     '</div>'
   );
 }
@@ -1209,8 +1209,7 @@ function htmlGalaxyRoom() {
           '<p style="font-size:14px;color:var(--text-secondary);line-height:1.5">' + escapeHtml(activeRoom.why) + '</p>' +
         '</div>' +
         '<div style="margin-top:20px;padding-bottom:8px">' +
-          '<button class="btn-primary no-pulse" id="btn-galaxy-continue"' +
-            ' style="background:' + color + ';color:#020B18;box-shadow:0 0 24px ' + color + '66">Enter My Room</button>' +
+          '<button class="btn-primary no-pulse" id="btn-galaxy-continue">Enter My Room</button>' +
         '</div>' +
       '</div>' +
       tabBarHTML('galaxy') +
@@ -1912,6 +1911,57 @@ function escapeHtml(str) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  HAPTIC FEEDBACK
+// ═══════════════════════════════════════════════════════════
+function triggerHaptic() {
+  try {
+    if (navigator.vibrate) navigator.vibrate(12);
+  } catch (_) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CTA ENCOURAGEMENT HINT
+// ═══════════════════════════════════════════════════════════
+const CTA_HINTS = ['Nice.', 'Good move.', 'Locked in.', "Let's go.", 'Smart step.', 'Great.'];
+
+function showCtaHint(btn) {
+  const hint = document.createElement('div');
+  hint.className = 'cta-hint';
+  hint.textContent = CTA_HINTS[Math.floor(Math.random() * CTA_HINTS.length)];
+
+  const rect = btn.getBoundingClientRect();
+  hint.style.cssText = [
+    'position:fixed',
+    'left:' + (rect.left + rect.width / 2) + 'px',
+    'top:' + (rect.top - 12) + 'px',
+    'transform:translateX(-50%)',
+  ].join(';');
+
+  document.body.appendChild(hint);
+  // trigger reflow so animation starts fresh
+  hint.getBoundingClientRect();
+  hint.classList.add('cta-hint-active');
+
+  setTimeout(() => {
+    if (hint.parentNode) hint.parentNode.removeChild(hint);
+  }, 900);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL CTA BUTTON HANDLER (haptic + bounce + hint)
+// ═══════════════════════════════════════════════════════════
+function setupCtaFeedback() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-primary:not([disabled]):not(.disabled)');
+    if (!btn) return;
+    triggerHaptic();
+    btn.classList.add('btn-tap');
+    setTimeout(() => btn.classList.remove('btn-tap'), 420);
+    showCtaHint(btn);
+  }, { passive: true });
+}
+
+// ═══════════════════════════════════════════════════════════
 //  TRIPLE-TAP LOGO HANDLER
 // ═══════════════════════════════════════════════════════════
 function setupTripleTap() {
@@ -1946,6 +1996,7 @@ function init() {
   renderDebugPanel();
   renderScreen('splash', false);
   setupTripleTap();
+  setupCtaFeedback();
 
   window.addEventListener('resize', () => { renderDebugPanel(); }, { passive: true });
 }
