@@ -1191,12 +1191,6 @@ html, body {
     max-width: calc(390px + 180px);
     margin: 0 auto;
   }
-  #screen-container {
-    margin-right: 0;
-  }
-  .debug-panel.hidden {
-    display: block;
-  }
   .debug-panel {
     display: block;
   }

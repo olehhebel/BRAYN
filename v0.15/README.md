@@ -17,7 +17,7 @@ Add to Home Screen for full-screen experience.
 On desktop (≥768px), a debug route panel appears on the right.
 On mobile, triple-tap the BRAYN logo to show/hide it.
 
-## Screens (30 total)
+## Screens (34 total)
 1. splash → 2. signup → 3. faceId → 4. introVideo
 → 5. transition1 → 6. nameInput → 7. transition2
 → 8. whoAreYou → 9. transition3 → 10. whatWant

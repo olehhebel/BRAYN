@@ -821,7 +821,7 @@ function htmlIdentityInfographic() {
           '<text x="188" y="82" text-anchor="start" fill="rgba(255,255,255,0.5)" font-size="10">Focus</text>' +
           '<text x="165" y="170" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">Action</text>' +
           '<text x="55" y="170" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">Courage</text>' +
-          '<text x="20" y="82" text-anchor="end" fill="rgba(255,255,255,0.5)" font-size="10" style="display:none">Trust</text>' +
+
         '</svg>' +
       '</div>' +
     '</div>' +
@@ -1646,13 +1646,18 @@ function initAvatarUpload(el) {
     });
   }
 
-  if (setBtn) setBtn.addEventListener('click', () => { if (fileInput) fileInput.click(); else navigate('finalGeneration'); });
-  if (laterBtn) laterBtn.addEventListener('click', () => navigate('finalGeneration'));
-
-  // If avatar already set, clicking Set Avatar goes straight to next
-  if (state.avatarSet && setBtn) {
-    setBtn.addEventListener('click', () => navigate('finalGeneration'), { once: true });
+  if (setBtn) {
+    setBtn.addEventListener('click', () => {
+      if (state.avatarSet) {
+        navigate('finalGeneration');
+      } else if (fileInput) {
+        fileInput.click();
+      } else {
+        navigate('finalGeneration');
+      }
+    });
   }
+  if (laterBtn) laterBtn.addEventListener('click', () => navigate('finalGeneration'));
 }
 
 function initFinalGeneration(el) {
