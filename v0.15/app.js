@@ -1264,7 +1264,6 @@ function htmlBraynIdHub() {
   const displayName = state.name || 'Brayner';
   const neurons = state.resources.neurons || 0;
   const minutes = state.resources.minutes || 0;
-  const beats = state.resources.beats || 0;
 
   return (
     '<div style="display:flex;flex-direction:column;height:100%">' +
