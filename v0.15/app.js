@@ -28,6 +28,8 @@ const state = {
 const COACH_NAMES = { kayra: 'Kayra', orra: 'Orra', maverick: 'Maverick', senzor: 'Senzor' };
 const COACH_INITIALS = { kayra: 'K', orra: 'O', maverick: 'M', senzor: 'S' };
 const REWARD_ANIMATION_MS = 2000;
+const STATE_STORAGE_KEY = 'brayn_state';
+const LEGACY_STORAGE_CLEANUP_KEY = 'brayn_state_legacy_cleared';
 
 const COACH_BRANCH_INFO = {
   kayra: {
@@ -110,13 +112,16 @@ const RESOURCE_BAR_SHOWN = new Set([
 //  PERSISTENCE
 // ═══════════════════════════════════════════════════════════
 function saveState() {
-  try { sessionStorage.setItem('brayn_state', JSON.stringify(state)); } catch (_) {}
+  try { sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
 }
 
 function loadState() {
   try {
-    localStorage.removeItem('brayn_state');
-    const saved = sessionStorage.getItem('brayn_state');
+    if (!sessionStorage.getItem(LEGACY_STORAGE_CLEANUP_KEY)) {
+      localStorage.removeItem(STATE_STORAGE_KEY);
+      sessionStorage.setItem(LEGACY_STORAGE_CLEANUP_KEY, '1');
+    }
+    const saved = sessionStorage.getItem(STATE_STORAGE_KEY);
     if (saved) Object.assign(state, JSON.parse(saved));
   } catch (_) {}
 }
