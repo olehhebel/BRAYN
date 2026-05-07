@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <text x="10" y="46" font-family="system-ui,-apple-system,sans-serif" font-size="48" font-weight="900" fill="#D5F20E" filter="url(#glow)" letter-spacing="4">BRAYN</text>
+</svg>
