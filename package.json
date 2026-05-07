@@ -8,8 +8,7 @@
     "dev": "python3 -m http.server 4173 --directory v0.15",
     "build": "echo \"BRAYN v0.15 is static: no build step required\"",
     "lint": "eslint .",
-    "preview": "python3 -m http.server 4173 --directory v0.15",
-    "predeploy": "npm run build"
+    "preview": "python3 -m http.server 4173 --directory v0.15"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

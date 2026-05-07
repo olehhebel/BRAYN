@@ -7,7 +7,7 @@
 
 Откройте файл:
 
-- `/home/runner/work/BRAYN/BRAYN/v0.15/index.html`
+- `v0.15/index.html`
 
 или поднимите локальный сервер из корня репозитория:
 
