@@ -6,6 +6,11 @@ Open `v0.15/index.html` directly in your browser, or serve with:
 npx serve v0.15
 ```
 
+From repository root you can also run:
+```
+python3 -m http.server 4173 --directory v0.15
+```
+
 ## GitHub Pages
 https://olehhebel.github.io/BRAYN/v0.15/
 
