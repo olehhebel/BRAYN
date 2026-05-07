@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <defs>
+    <filter id="g"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <circle cx="40" cy="40" r="38" fill="#0F1F35" stroke="#00E5FF" stroke-width="2"/>
+  <circle cx="40" cy="40" r="36" fill="rgba(0,229,255,0.1)"/>
+  <text x="40" y="52" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="32" font-weight="700" fill="#00E5FF" filter="url(#g)">O</text>
+</svg>
