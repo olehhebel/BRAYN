@@ -1913,9 +1913,11 @@ function escapeHtml(str) {
 // ═══════════════════════════════════════════════════════════
 //  HAPTIC FEEDBACK
 // ═══════════════════════════════════════════════════════════
+const CTA_BOUNCE_MS = 420; // keep in sync with --cta-bounce-duration in CSS
+
 function triggerHaptic() {
   try {
-    if (navigator.vibrate) navigator.vibrate(12);
+    if (navigator.vibrate) { navigator.vibrate(12); }
   } catch (_) {}
 }
 
@@ -1956,9 +1958,9 @@ function setupCtaFeedback() {
     if (!btn) return;
     triggerHaptic();
     btn.classList.add('btn-tap');
-    setTimeout(() => btn.classList.remove('btn-tap'), 420);
+    setTimeout(() => btn.classList.remove('btn-tap'), CTA_BOUNCE_MS);
     showCtaHint(btn);
-  }, { passive: true });
+  });
 }
 
 // ═══════════════════════════════════════════════════════════

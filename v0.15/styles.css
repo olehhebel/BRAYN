@@ -17,6 +17,8 @@
   --glass-bg: rgba(255,255,255,0.05);
   --glass-border: rgba(255,255,255,0.12);
   --screen-pad: 24px;
+  --bounce-easing: cubic-bezier(0.34,1.56,0.64,1);
+  --cta-bounce-duration: 420ms;
 }
 
 /* ── Reset ── */
@@ -165,13 +167,13 @@ html, body {
   justify-content: center;
   gap: 8px;
   box-shadow: 0 0 24px rgba(213,242,14,0.4);
-  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, opacity 0.2s;
+  transition: transform 0.15s var(--bounce-easing), box-shadow 0.2s, opacity 0.2s;
   letter-spacing: 0.2px;
   position: relative;
 }
 .btn-primary:active { transform: scale(0.95); }
 .btn-primary.btn-tap {
-  animation: ctaBounce 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation: ctaBounce var(--cta-bounce-duration) var(--bounce-easing) forwards;
 }
 @keyframes ctaBounce {
   0%   { transform: scale(0.94); }
